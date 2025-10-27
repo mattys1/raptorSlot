@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: .
+    depends_on:
+      migrator:
+        condition: service_completed_successfully 
+    command: "dotnet CRUD.dll"
+    volumes:
+      - ./db:/app/db
+    networks:
+      - app-network
+    ports:
+      - 80:8080
+  migrator:
+    build:
+      context: ./db
+    command: "dotnet ef database update"
+    working_dir: /app
+    volumes:
+      - .:/app
+
+networks:
+  app-network:
+    driver: bridge

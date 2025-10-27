@@ -1,0 +1,28 @@
+﻿@{
+    ViewBag.Title = "Strona Główna";
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Operacje CRUD</h2>
+        <ul class="list-group">
+            <li class="list-group-item">
+                <a href="@Url.Action("Index", "Osoby")">Lista Osób (Read)</a>
+            </li>
+            <li class="list-group-item">
+                <a href="@Url.Action("Create", "Osoby")">Dodaj Osobę (Create)</a>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-6 text-center">
+        <img src="~/Content/asplogo.png" alt="Logo asp" class="img-responsive center-block" style="max-width:100%; height:auto;" />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Opis</h2>
+        <p>Aplikacja pozwala na wykonywanie wszystkich operacji CRUD. Kliknij na jeden z linków w tabelce, aby przejść do menu operacji.</p>
+    </div>
+</div>
+
