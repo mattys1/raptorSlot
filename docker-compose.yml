@@ -11,14 +11,14 @@ services:
     networks:
       - app-network
     ports:
-      - 80:8080
+      - 8080:8080
   migrator:
     build:
-      context: ./db
+      context: .
+      dockerfile: db/dockerfile
     command: "dotnet ef database update"
-    working_dir: /app
     volumes:
-      - .:/app
+      - ./db/app.db:/app/db/app.db
 
 networks:
   app-network:

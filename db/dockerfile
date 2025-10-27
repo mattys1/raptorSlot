@@ -1,3 +1,5 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS migrate
 RUN dotnet tool install --global dotnet-ef 
+COPY . /app
+WORKDIR /app
 ENV PATH="$PATH:/root/.dotnet/tools"
