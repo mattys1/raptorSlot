@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CRUD.Controllers
+namespace raptorSlot.Controllers
 {
     public class HomeController : Controller
     {

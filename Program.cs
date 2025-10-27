@@ -1,4 +1,4 @@
-using CRUD.DAL;
+using raptorSlot.DAL;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

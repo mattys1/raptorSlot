@@ -1,10 +1,10 @@
 ﻿using System.Net;
-using CRUD.DAL;
-using CRUD.Models;
+using raptorSlot.DAL;
+using raptorSlot.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CRUD.Controllers
+namespace raptorSlot.Controllers
 {
     public class OsobyController(OsobaContext context) : Controller
     {

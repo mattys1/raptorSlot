@@ -1,4 +1,4 @@
-namespace CRUD.Models;
+namespace raptorSlot.Models;
 
 public class ErrorViewModel
 {

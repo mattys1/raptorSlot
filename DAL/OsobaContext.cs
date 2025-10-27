@@ -1,7 +1,7 @@
-using CRUD.Models;
+using raptorSlot.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace CRUD.DAL
+namespace raptorSlot.DAL
 {
     public class OsobaContext(DbContextOptions<OsobaContext> options) : DbContext(options)
     {

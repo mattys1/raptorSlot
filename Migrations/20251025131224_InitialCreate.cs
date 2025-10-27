@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace CRUD.Migrations
+namespace raptorSlot.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
