@@ -1,5 +1,19 @@
+@using raptorSlot.Controllers
+@using raptorSlot.Util
 @{
     ViewBag.Title = "Login";
 }
 
 <h1>@ViewBag.Title</h1>
+
+@using (Html.BeginForm(nameof(AccountController.Login), ControllerStripper.StripControllerSuffix(nameof(AccountController)), FormMethod.Post))
+{
+    <label for="@nameof(Model.Email)">Email:</label>
+    <input type="text" id="@nameof(Model.Email)" name="@nameof(Model.Email)" />
+
+    <label for="@nameof(Model.Password)">Password:</label>
+    <input type="password" id="@nameof(Model.Password)" name="@nameof(Model.Password)" />
+
+    <button type="submit">Login</button>
+	@Html.ValidationSummary()
+}

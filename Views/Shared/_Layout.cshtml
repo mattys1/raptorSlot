@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using raptorSlot.Controllers
+@using raptorSlot.Util
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -26,6 +28,18 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+
+						<li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AccountController))" asp-action="@nameof(AccountController.Login)">Log In</a>
+						</li>
+						<li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AccountController))" asp-action="@nameof(AccountController.Register)">Register</a>
+						</li>
+						<li>
+							<a class="nav-link text-dark" asp-area="" asp-action="@nameof(AccountController.Logout)" asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AccountController))" method="get">Log out</a>
+						</li>
+						<!--<button type="submit">Log out</button>-->
+						</a>
                     </ul>
                 </div>
             </div>
