@@ -28,7 +28,7 @@ namespace raptorSlot.Controllers
 				return View(model);
 			}
 
-			return RedirectToAction("Index", "Home");
+			return RedirectToAction(nameof(HomeController.Index), ControllerStripper.StripControllerSuffix(nameof(HomeController)));
 
 		}
 
@@ -49,7 +49,14 @@ namespace raptorSlot.Controllers
 				return View(model);
 			}
 
-			return RedirectToAction("Index", "Home");
+			return RedirectToAction(nameof(HomeController.Index), ControllerStripper.StripControllerSuffix(nameof(HomeController)));
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> Logout() {
+			await accountService.LogoutUser();	
+
+			return RedirectToAction(nameof(HomeController.Index), ControllerStripper.StripControllerSuffix(nameof(HomeController)));
 		}
 	}
 }

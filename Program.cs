@@ -23,6 +23,8 @@ builder.Services.Configure<IdentityOptions>(
 			options.Password.RequireNonAlphanumeric = false;
 			options.Password.RequiredLength = 1;
 			options.Password.RequiredUniqueChars = 0;
+			options.SignIn.RequireConfirmedEmail = false;
+			options.SignIn.RequireConfirmedAccount = false;
 		}
 );
 
