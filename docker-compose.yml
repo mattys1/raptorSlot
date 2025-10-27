@@ -18,7 +18,7 @@ services:
       dockerfile: db/dockerfile
     command: "dotnet ef database update"
     volumes:
-      - ./db/app.db:/app/db/app.db
+      - ./db/:/app/db/
 
 networks:
   app-network:
