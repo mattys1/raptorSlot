@@ -2,6 +2,6 @@ namespace raptorSlot
 {
     public class Roles
     {
-		public static readonly string ADMIN = "Admin";
+		public const string ADMIN = "Admin";
     }
 }

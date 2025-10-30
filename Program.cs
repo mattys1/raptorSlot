@@ -54,15 +54,16 @@ using (var scope = app.Services.CreateScope())
         await roleManager.CreateAsync(new IdentityRole(Roles.ADMIN));
     }
 
-    var adminUser = await userManager.FindByEmailAsync(EnvVars.Get.ADMIN_EMAIL);
+    var adminUser = await userManager.FindByEmailAsync(EnvVars.ADMIN_EMAIL);
     if(adminUser == null) {
-        adminUser = new AppUser { UserName = EnvVars.Get.ADMIN_USERNAME, Email = EnvVars.Get.ADMIN_EMAIL, EmailConfirmed = true };
-        var createResult = await userManager.CreateAsync(adminUser, EnvVars.Get.ADMIN_PASSWORD);
+        adminUser = new AppUser { UserName = EnvVars.ADMIN_USERNAME, Email = EnvVars.ADMIN_EMAIL, EmailConfirmed = true };
+        var createResult = await userManager.CreateAsync(adminUser, EnvVars.ADMIN_PASSWORD);
 		Debug.Assert(createResult.Succeeded, "Failed to create admin user");	
     }
 
     if(!await userManager.IsInRoleAsync(adminUser, Roles.ADMIN)) {
         await userManager.AddToRoleAsync(adminUser, Roles.ADMIN);
+
     }
 }
 
