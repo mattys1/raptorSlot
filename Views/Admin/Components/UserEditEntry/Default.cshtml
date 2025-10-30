@@ -1,0 +1,14 @@
+@using raptorSlot.Controllers
+@using raptorSlot.Util
+@model AppUser
+
+@{
+    var confirmMessage = $"Are you sure you want to delete {Model.UserName}?";
+}
+
+<div>
+	<b>@Model.UserName</b>
+	<form asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AdminController))" asp-action="@nameof(AdminController.DeleteUser)" asp-route-id="@Model.Id" method="@HttpMethod.Post" onsubmit="return confirm(@confirmMessage);">
+		<button type="submit">Delete User</button>
+	</form>
+</div>

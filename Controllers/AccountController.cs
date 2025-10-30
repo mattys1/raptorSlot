@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using CSharpFunctionalExtensions;
 using CSharpFunctionalExtensions.ValueTasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using raptorSlot.Services;
 using raptorSlot.Util;
@@ -11,9 +12,17 @@ namespace raptorSlot.Controllers
 	public class AccountController(AccountService accountService) : Controller
 	{
 		[HttpGet]
+		[AllowAnonymous]
 		public IActionResult Register() {
 			return View();
 		}
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
 
 		[HttpPost]
 		public async Task<IActionResult> Register(RegisterViewModel model) {
@@ -33,6 +42,7 @@ namespace raptorSlot.Controllers
 		}
 
 		[HttpGet]
+		[AllowAnonymous]
 		public IActionResult Login() {
 			return View();
 		}
@@ -46,6 +56,7 @@ namespace raptorSlot.Controllers
 			var loginResult = await accountService.LoginUser(model);
 			if(loginResult.IsFailure) {
 				ModelState.AddModelError(string.Empty, loginResult.Error);
+				Console.Error.WriteLine($"Login failed: {loginResult.Error}");
 				return View(model);
 			}
 
