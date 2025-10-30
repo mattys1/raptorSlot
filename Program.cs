@@ -3,17 +3,20 @@ using Microsoft.EntityFrameworkCore;
 using raptorSlot.Models;
 using Microsoft.AspNetCore.Identity;
 using raptorSlot.Services;
+using raptorSlot;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDBContext>(
-		options => options.UseSqlite(builder.Configuration.GetConnectionString("defaultConnection"))
+		options => options
+			.UseSqlite(builder.Configuration.GetConnectionString("defaultConnection"))
 );
-builder.Services.AddDefaultIdentity<AppUser>(
-		options => options.SignIn.RequireConfirmedAccount = true
-).AddEntityFrameworkStores<AppDBContext>().AddDefaultUI();
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+	.AddEntityFrameworkStores<AppDBContext>()
+	.AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(
 		options => {
@@ -28,8 +31,8 @@ builder.Services.Configure<IdentityOptions>(
 		}
 );
 
-builder.Services.AddScoped<AccountService>();
 
+builder.Services.AddScoped<AccountService>();
 
 var app = builder.Build();
 
@@ -39,6 +42,28 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+
+    if(!await roleManager.RoleExistsAsync(Roles.ADMIN)) {
+        await roleManager.CreateAsync(new IdentityRole(Roles.ADMIN));
+    }
+
+    var adminUser = await userManager.FindByEmailAsync(EnvVars.Get.ADMIN_EMAIL);
+    if(adminUser == null) {
+        adminUser = new AppUser { UserName = EnvVars.Get.ADMIN_USERNAME, Email = EnvVars.Get.ADMIN_EMAIL, EmailConfirmed = true };
+        var createResult = await userManager.CreateAsync(adminUser, EnvVars.Get.ADMIN_PASSWORD);
+		Debug.Assert(createResult.Succeeded, "Failed to create admin user");	
+    }
+
+    if(!await userManager.IsInRoleAsync(adminUser, Roles.ADMIN)) {
+        await userManager.AddToRoleAsync(adminUser, Roles.ADMIN);
+    }
 }
 
 app.UseHttpsRedirection();
@@ -54,6 +79,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}"
 ).WithStaticAssets();
 
-app.MapRazorPages();
+// app.MapRazorPages();
 
 app.Run();
