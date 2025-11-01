@@ -1,10 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.InteropServices;
 
 namespace raptorSlot.ViewModels.Shared {
 	public class UserCreateViewModel
 	{
-		public string? Id { get; set; }
 		[Required]
 		required public string Username { get; init; }
 

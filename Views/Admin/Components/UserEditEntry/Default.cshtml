@@ -11,4 +11,10 @@
 	<form asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AdminController))" asp-action="@nameof(AdminController.DeleteUser)" asp-route-id="@Model.Id" method="@HttpMethod.Post" onsubmit="return confirm(@confirmMessage);">
 		<button type="submit">Delete User</button>
 	</form>
-</div>
+	<a asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AdminController))" 
+	   asp-action="@nameof(AdminController.EditUser)" 
+	   asp-route-id="@Model.Id" 
+	   class="btn btn-primary">
+		Edit User
+	</a>
+	</div>

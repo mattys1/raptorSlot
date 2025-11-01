@@ -1,16 +1,12 @@
 @using raptorSlot.Controllers
 @using raptorSlot.Util
+@using raptorSlot.ViewModels.Account
 @using raptorSlot.ViewModels.Shared
 
-@model raptorSlot.Views.Shared.Components.UserPostForm.UserPostFormInputViewModel
+@model raptorSlot.Views.Shared.Components.UserCreateForm.UserCreateFormInputViewModel
 
 @using (Html.BeginForm(Model.ActionName, Model.ControllerName, FormMethod.Post))
 {
-    @if(!string.IsNullOrEmpty(Model.Id.ToString()))
-    {
-        <input type="hidden" name="@nameof(UserCreateViewModel.Id)" value="@Model.Id" />
-    }
-
     <label for="@nameof(UserCreateViewModel.Username)">Username:</label>
     <input type="text" id="@nameof(UserCreateViewModel.Username)" name="@nameof(UserCreateViewModel.Username)" />
 
@@ -23,6 +19,6 @@
     <label for="@nameof(UserCreateViewModel.RepeatPassword)">Repeat Password:</label>
     <input type="password" id="@nameof(UserCreateViewModel.RepeatPassword)" name="@nameof(UserCreateViewModel.RepeatPassword)" />
 
-    <button type="submit">@Model.ButtonText</button>
+    <button type="submit">@Model?.ButtonText</button>
     @Html.ValidationSummary()
 }

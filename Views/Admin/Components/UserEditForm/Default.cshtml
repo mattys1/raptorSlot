@@ -1,0 +1,30 @@
+@using raptorSlot.Controllers
+@using raptorSlot.Util
+@using raptorSlot.ViewModels.Account
+@using raptorSlot.ViewModels.Admin.raptorSlot.ViewModels.Shared
+@using raptorSlot.ViewModels.Shared
+
+@model raptorSlot.Views.Admin.Components.UserEditForm.UserEditFormInputViewModel
+
+@using (Html.BeginForm(Model.ActionName, ControllerStripper.StripControllerSuffix(Model.ControllerName), FormMethod.Post))
+{
+    @if(!string.IsNullOrEmpty(Model.Id))
+    {
+        <input type="hidden" name="@nameof(UserEditViewModel.Id)" value="@Model.Id" />
+    }
+
+    <label for="@nameof(UserEditViewModel.Username)">Username:</label>
+    <input type="text" id="@nameof(UserEditViewModel.Username)" name="@nameof(UserEditViewModel.Username)" value="@Model?.ExistingUser?.UserName" />
+
+    <label for="@nameof(UserEditViewModel.Email)">Email:</label>
+    <input type="text" id="@nameof(UserEditViewModel.Email)" name="@nameof(UserEditViewModel.Email)" value="@Model?.ExistingUser?.Email" />
+
+    <label for="@nameof(UserEditViewModel.Password)">Password:</label>
+    <input type="password" id="@nameof(UserEditViewModel.Password)" name="@nameof(UserEditViewModel.Password)" />
+
+    <label for="@nameof(UserEditViewModel.RepeatPassword)">Repeat Password:</label>
+    <input type="password" id="@nameof(UserEditViewModel.RepeatPassword)" name="@nameof(UserEditViewModel.RepeatPassword)" />
+
+    <button type="submit">@Model?.ButtonText</button>
+    @Html.ValidationSummary()
+}

@@ -1,18 +1,19 @@
-@model TModel
+@using raptorSlot.Controllers
+@using raptorSlot.Util
+@using raptorSlot.ViewModels.Admin.raptorSlot.ViewModels.Shared
+@using raptorSlot.Views.Admin.Components.UserEditForm
+@using raptorSlot.Views.Shared.Components.UserCreateForm
+@* @{ *@
+@*     ViewBag.Title = "Edit User"; *@
+@* } *@
 
-@{
-    Layout = null;
-}
+@model raptorSlot.ViewModels.Admin.raptorSlot.ViewModels.Shared.UserEditViewModel
+<h2>Edit User: @Model.OldData.UserName</h2>
 
-<!DOCTYPE html>
-
-<html>
-<head>
-    <title>title</title>
-</head>
-<body>
-<div>
-      
-</div>
-</body>
-</html>
+@await Component.InvokeAsync(nameof(UserEditForm), new {
+    controllerName = nameof(AdminController),
+    methodName = nameof(AdminController.EditUser),
+    buttonText = "Edit User",
+    guid = Model.Id,
+    user = Model.OldData
+})

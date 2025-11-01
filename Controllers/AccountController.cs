@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using raptorSlot.Services;
 using raptorSlot.Util;
 using raptorSlot.ViewModels.Account;
+using raptorSlot.ViewModels.Shared;
 
 namespace raptorSlot.Controllers
 {
@@ -25,7 +26,7 @@ namespace raptorSlot.Controllers
         }
 
 		[HttpPost]
-		public async Task<IActionResult> Register(RegisterViewModel model) {
+		public async Task<IActionResult> Register(UserCreateViewModel model) {
 			Console.WriteLine($"Registering user: {model.Username} with password: {model.Password} and confirmPassword: {model.RepeatPassword}");
 			if(!ModelState.IsValid) {
 				return View(model);

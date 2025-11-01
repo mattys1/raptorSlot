@@ -1,6 +1,6 @@
 @using raptorSlot.Controllers
 @using raptorSlot.Util
-@using raptorSlot.Views.Shared.Components.UserPostForm
+@using raptorSlot.Views.Shared.Components.UserCreateForm
 @{
     ViewBag.Title = "Registration";
 }
@@ -25,7 +25,7 @@
 @* 	@Html.ValidationSummary() *@
 @* } *@
 
-@await Component.InvokeAsync(nameof(UserPostForm), new { 
+@await Component.InvokeAsync(nameof(UserCreateForm), new { 
     controller = nameof(AccountController), 
     methodName = nameof(AccountController.Register), 
     buttonText = "Register",

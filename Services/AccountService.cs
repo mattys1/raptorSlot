@@ -2,10 +2,11 @@ using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Identity;
 using raptorSlot.Models;
 using raptorSlot.ViewModels.Account;
+using raptorSlot.ViewModels.Shared;
 
 namespace raptorSlot.Services {
 	public class AccountService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager) {
-		public async Task<Result<AppUser>> RegisterUser(RegisterViewModel model) {
+		public async Task<Result<AppUser>> RegisterUser(UserCreateViewModel model) {
 			var user = new AppUser {
 				UserName = model.Username,
 				Email = model.Email,
