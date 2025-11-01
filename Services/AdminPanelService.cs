@@ -25,6 +25,22 @@ namespace raptorSlot.Services
 			return [.. userManager.Users.Where(u => !u.Email!.Equals(EnvVars.ADMIN_EMAIL))];
 		}
 
+		public async Task<Result> CreateUser(UserCreateViewModel model) {
+			var user = new AppUser {
+				Email = model.Email,
+				UserName = model.Username
+			};
+				
+			var result = await userManager.CreateAsync(user, model.Password);
+			if(result.Succeeded) {
+				return Result.Success();
+			} else {
+				return Result.Failure<AppUser>(
+						string.Join(", ", result.Errors.Select(e => e.Description))
+				);
+			}
+		}
+
 		public async Task<Result> EditUser(UserEditViewModel newData) {
 			var user = await userManager.FindByIdAsync(newData.Id!);
 			if(user == null) {

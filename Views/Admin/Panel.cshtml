@@ -1,3 +1,5 @@
+@using raptorSlot.Controllers
+@using raptorSlot.Util
 @using raptorSlot.Views.Admin.Components.UserEditEntry
 
 @model List<AppUser>
@@ -7,6 +9,7 @@
 }
 
 <h2>Admin Panel</h2>
+<a class="btn btn-primary" asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AdminController))" asp-action="@nameof(AdminController.CreateUser)">Create User</a>
 
 @foreach(var user in Model) {
 	<li>

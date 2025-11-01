@@ -1,0 +1,14 @@
+@using raptorSlot.Controllers
+@using raptorSlot.Util
+@using raptorSlot.Views.Shared.Components.UserCreateForm
+@{
+    ViewBag.Title = "Create User";
+}
+
+<h2>Create User</h2>
+
+@await Component.InvokeAsync(nameof(UserCreateForm), new {
+    controllerName = ControllerStripper.StripControllerSuffix(nameof(AdminController)),
+    methodName = nameof(AdminController.CreateUser),
+    buttonText = "Create User",
+})

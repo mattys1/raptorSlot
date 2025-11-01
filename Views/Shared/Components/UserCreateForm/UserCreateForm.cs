@@ -3,9 +3,8 @@ using raptorSlot.Models;
 
 namespace raptorSlot.Views.Shared.Components.UserCreateForm {
 	public class UserCreateForm : ViewComponent {
-		public IViewComponentResult Invoke(string controllerName, string methodName, string buttonText, string? guid, AppUser? user) {
+		public IViewComponentResult Invoke(string controllerName, string methodName, string buttonText) {
 			return View(new UserCreateFormInputViewModel {
-				Id = guid,
 				ActionName = methodName,
 				ControllerName = controllerName,
 				ButtonText = buttonText,
@@ -14,7 +13,6 @@ namespace raptorSlot.Views.Shared.Components.UserCreateForm {
 	}
 
 	public class UserCreateFormInputViewModel {
-        public string? Id { get; set; }
         required public string ActionName { get; set; }
         required public string ControllerName { get; set; }
         required public string ButtonText { get; set; }

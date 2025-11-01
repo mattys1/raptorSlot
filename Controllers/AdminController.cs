@@ -19,14 +19,23 @@ namespace raptorSlot.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> EditUser(string id) {
-			var user = await userManager.FindByIdAsync(id);
-			if(user == null){
-				TempData["Error"] = "Failed to edit user! User not found.";
-				return RedirectToAction(nameof(Panel));
+		public IActionResult CreateUser() {
+			return View();
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> CreateUser(UserCreateViewModel newData) {
+			if(!ModelState.IsValid){
+				return View(newData);
 			}	
 			
-			return View(user);
+			var result = await panelService.CreateUser(newData);
+
+			if(result.IsFailure) {
+				TempData["Error"] = "Failed to create user! " + result.Error;
+			}
+
+			return RedirectToAction(nameof(Panel));
 		}
 
 		[HttpPost]
@@ -37,6 +46,17 @@ namespace raptorSlot.Controllers
 			return RedirectToAction(nameof(Panel));	
 		}
 
+		[HttpGet]
+		public async Task<IActionResult> EditUser(string id) {
+			var user = await userManager.FindByIdAsync(id);
+			if(user == null){
+				TempData["Error"] = "Failed to edit user! User not found.";
+				return RedirectToAction(nameof(Panel));
+			}	
+			
+			return View(user);
+		}
+		
 		[HttpPost]
 		public async Task<IActionResult> EditUser(UserEditViewModel newData) {
 			Debug.Assert(newData.Id != null,  $"Id of {newData.Username} is null during admin edit");
