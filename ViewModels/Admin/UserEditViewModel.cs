@@ -6,7 +6,6 @@ using System.ComponentModel.DataAnnotations;
 namespace raptorSlot.ViewModels.Shared {
 	public class UserEditViewModel
 	{
-		required public AppUser OldData { get; set; }
 		public string? Id { get; set; }
 		public string? Username { get; set; }
 

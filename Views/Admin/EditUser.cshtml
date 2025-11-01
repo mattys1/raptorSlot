@@ -7,13 +7,13 @@
 @*     ViewBag.Title = "Edit User"; *@
 @* } *@
 
-@model raptorSlot.ViewModels.Admin.raptorSlot.ViewModels.Shared.UserEditViewModel
-<h2>Edit User: @Model.OldData.UserName</h2>
+@model AppUser
+<h2>Edit User: @Model.UserName</h2>
 
 @await Component.InvokeAsync(nameof(UserEditForm), new {
     controllerName = nameof(AdminController),
     methodName = nameof(AdminController.EditUser),
     buttonText = "Edit User",
     guid = Model.Id,
-    user = Model.OldData
+    user = Model
 })

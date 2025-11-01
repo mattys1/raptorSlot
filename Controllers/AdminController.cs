@@ -26,12 +26,7 @@ namespace raptorSlot.Controllers
 				return RedirectToAction(nameof(Panel));
 			}	
 			
-			return View(new UserEditViewModel {
-				OldData = user,
-				Id = user.Id,
-				Username = user.UserName,
-				Email = user.Email
-			});
+			return View(user);
 		}
 
 		[HttpPost]
@@ -46,14 +41,14 @@ namespace raptorSlot.Controllers
 		public async Task<IActionResult> EditUser(UserEditViewModel newData) {
 			Debug.Assert(newData.Id != null,  $"Id of {newData.Username} is null during admin edit");
 			if(!ModelState.IsValid){
-				newData.OldData = await userManager.FindByIdAsync(newData.Id!);
-				return View(newData);
+				var user = await userManager.FindByIdAsync(newData.Id!);
+				return View(user);
 			}
 			var result = await panelService.EditUser(newData);
 			if(result.IsFailure) {
-				newData.OldData = await userManager.FindByIdAsync(newData.Id!);
+				var user = await userManager.FindByIdAsync(newData.Id!);
 				ModelState.AddModelError(string.Empty, result.Error);
-				return View(newData);
+				return View(user);
 			}
 			
 			return RedirectToAction(nameof(Panel));
