@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "Token Shop";
+    var tokens = ViewBag.Tokens ?? 0;
+}
+
+<div class="container mt-4">
+    <h2>Token Shop</h2>
+    <p>Your current balance: <strong>@tokens tokens</strong></p>
+
+    @if (TempData["ShopSuccess"] != null)
+    {
+    <div class="alert alert-success">@TempData["ShopSuccess"]</div>
+    }
+    @if (TempData["ShopError"] != null)
+    {
+    <div class="alert alert-danger">@TempData["ShopError"]</div>
+    }
+
+    <div class="row mt-4">
+        @{
+            var offers = new (int amount, string price)[] {
+                (10, "$1.00"),
+                (50, "$4.00"),
+                (100, "$7.00"),
+                (500, "$30.00")
+            };
+        }
+
+        @foreach (var offer in offers)
+        {
+        <div class="col-md-6 mb-4">
+            <div class="card border-dark shadow-sm">
+                <div class="card-body text-center">
+                    <h4>@offer.amount Tokens</h4>
+                    <p>Price: @offer.price</p>
+                    <form asp-action="Buy" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="amount" value="@offer.amount" />
+                        <button type="submit" class="btn btn-primary">Buy</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</div>
