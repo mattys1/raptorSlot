@@ -49,6 +49,7 @@ namespace raptorSlot.Services
 
 			user.UserName = newData.Username;
 			user.Email = newData.Email;
+			user.Tokens = newData.Tokens ?? user.Tokens;
 
 			var result = await userManager.UpdateAsync(user);
 			if(!result.Succeeded) {
