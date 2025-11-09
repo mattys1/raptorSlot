@@ -25,6 +25,9 @@
     <label for="@nameof(UserEditViewModel.RepeatPassword)">Repeat Password:</label>
     <input type="password" id="@nameof(UserEditViewModel.RepeatPassword)" name="@nameof(UserEditViewModel.RepeatPassword)" />
 
+    <label for="@nameof(UserEditViewModel.Tokens)">Tokens:</label>
+    <input type="number" id="@nameof(UserEditViewModel.Tokens)" name="@nameof(UserEditViewModel.Tokens)" value="@Model?.ExistingUser?.Tokens" />
+    
     <button type="submit">@Model?.ButtonText</button>
     @Html.ValidationSummary()
 }

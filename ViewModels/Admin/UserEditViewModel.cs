@@ -17,6 +17,8 @@ namespace raptorSlot.ViewModels.Shared {
 
 		[Compare(nameof(Password))]
 		public string? RepeatPassword { get; set; }
+		
+		public int? Tokens { get; set; }
 	}
 }
 }
