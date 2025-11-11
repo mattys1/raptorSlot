@@ -8,19 +8,28 @@ public record Wager(int wagerAmount, bool isPremiumToken = false);
 
 public abstract class GameServiceBase<TDrawResult>(UserManager<AppUser> userManager)
 {
-    public async Task<Tuple<TDrawResult, Wager>> Play(Wager wager, string userId)
+    public async Task<Result<Tuple<TDrawResult, Wager>>> Play(Wager wager, string userId)
     {
         if(wager.isPremiumToken){
             throw new NotImplementedException("NIE MA PREMIUM TOKENOW JESZCZE");
         }
         var drawResult = Draw();
-        var tokens = GenerateTokensForDraw(drawResult);
-        await ChangeTokensForUser(tokens, userId);
+        var multiplierResult = GenerateMultiplierForDraw(drawResult);
+        if(multiplierResult.IsFailure) {
+            return Result.Failure<Tuple<TDrawResult, Wager>>(multiplierResult.Error);
+        }
+        
+        var tokens = wager.wagerAmount * multiplierResult.Value;
+        var changed = await ChangeTokensForUser(tokens, userId);
+        if(changed.IsFailure) {
+            return Result.Failure<Tuple<TDrawResult, Wager>>(changed.Error);
+        }
+        
         return Tuple.Create(drawResult, new Wager(tokens, wager.isPremiumToken));
     }
 
     protected abstract TDrawResult Draw();
-    protected abstract int GenerateTokensForDraw(TDrawResult drawResult);
+    protected abstract Result<int> GenerateMultiplierForDraw(TDrawResult drawResult);
 
     protected async Task<Result> ChangeTokensForUser(int tokenChange, string userId) {
         var user = await userManager.FindByIdAsync(userId);
@@ -35,20 +44,29 @@ public abstract class GameServiceBase<TDrawResult>(UserManager<AppUser> userMana
 
 public abstract class GameServiceBase<TPayload, TDrawResult>(UserManager<AppUser> userManager) : GameServiceBase<TDrawResult>(userManager)
 {
-    public async Task<Tuple<TDrawResult, Wager>> Play(Wager wager, TPayload payload, string userId)
+    public async Task<Result<Tuple<TDrawResult, Wager>>> Play(Wager wager, TPayload payload, string userId)
     {
         if(wager.isPremiumToken){
             throw new NotImplementedException("NIE MA PREMIUM TOKENOW JESZCZE");
         }
         var drawResult = Draw();
-        var tokens = GenerateTokensForDraw(payload, drawResult);
-        await ChangeTokensForUser(tokens, userId);
+        var multiplierResult = GenerateMultiplierForDraw(payload, drawResult);
+        if(multiplierResult.IsFailure) {
+            return Result.Failure<Tuple<TDrawResult, Wager>>(multiplierResult.Error);
+        }
+        
+        var tokens = wager.wagerAmount * multiplierResult.Value;
+        var changed = await ChangeTokensForUser(tokens, userId);
+        if(changed.IsFailure) {
+            return Result.Failure<Tuple<TDrawResult, Wager>>(changed.Error);
+        }
+        
         return Tuple.Create(drawResult, new Wager(tokens, wager.isPremiumToken));
     }
 
-    protected override sealed int GenerateTokensForDraw(TDrawResult drawResult) {
+    protected override sealed Result<int> GenerateMultiplierForDraw(TDrawResult drawResult) {
         throw new NotImplementedException("TEGO NIE IMPLEMENTUJEMY TYLKO C# SSIE WIEC TRZEBA COS TAKIEGO ZROBIC");
     }
     
-    protected abstract int GenerateTokensForDraw(TPayload payload, TDrawResult drawResult);
+    protected abstract Result<int> GenerateMultiplierForDraw(TPayload payload, TDrawResult drawResult);
 }
