@@ -1,0 +1,119 @@
+@{
+    ViewData["Title"] = "Play";
+    var initialTokens = ViewBag.Tokens ?? 0;
+}
+
+<div class="container mt-4">
+    <h2>Three Numbers</h2>
+    <p>Your balance: <span id="balance">@initialTokens</span> tokens</p>
+
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex justify-content-center align-items-end mb-3" style="gap:20px;">
+                    <div class="reel border rounded p-3" style="width:80px; height:80px; display:flex; align-items:center; justify-content:center; font-size:32px" id="reel1">1</div>
+                    <div class="reel border rounded p-3" style="width:80px; height:80px; display:flex; align-items:center; justify-content:center; font-size:32px" id="reel2">1</div>
+                    <div class="reel border rounded p-3" style="width:80px; height:80px; display:flex; align-items:center; justify-content:center; font-size:32px" id="reel3">1</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="wager" class="form-label">Wager (tokens)</label>
+                    <input type="number" id="wager" class="form-control" min="1" value="1" />
+                </div>
+
+                <div>
+                    <button id="playBtn" class="btn btn-success">Play</button>
+                    <button id="quick10" class="btn btn-outline-secondary">Bet 10</button>
+                    <button id="quick50" class="btn btn-outline-secondary">Bet 50</button>
+                </div>
+
+                <div class="mt-3" id="messageArea"></div>
+
+                @* Anti-forgery token hidden *@
+                <form id="antif" style="display:none">
+                    @Html.AntiForgeryToken()
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        (function () {
+            function setMessage(html, isError) {
+                $("#messageArea").html(`<div class="alert ${isError ? 'alert-danger':'alert-success'}">${html}</div>`);
+            }
+
+            function animateReels(finalNumbers, onComplete) {
+                // Prosta animacja: szybko zmieniaj liczby, zatrzymuj sekwencyjnie
+                const reels = [$("#reel1"), $("#reel2"), $("#reel3")];
+                const intervals = [];
+                // start spinning
+                for (let i = 0; i < 3; i++) {
+                    intervals[i] = setInterval(() => {
+                        const n = Math.floor(Math.random() * 6) + 1;
+                        reels[i].text(n);
+                    }, 80 + i * 10);
+                }
+
+                // stop kolejno: 1s, 1.6s, 2.2s
+                setTimeout(() => { clearInterval(intervals[0]); reels[0].text(finalNumbers[0]); }, 1000);
+                setTimeout(() => { clearInterval(intervals[1]); reels[1].text(finalNumbers[1]); }, 1600);
+                setTimeout(() => { clearInterval(intervals[2]); reels[2].text(finalNumbers[2]); if(onComplete) onComplete(); }, 2200);
+            }
+
+            $("#quick10").on("click", () => { $("#wager").val(10); });
+            $("#quick50").on("click", () => { $("#wager").val(50); });
+
+            $("#playBtn").on("click", function () {
+                const wager = parseInt($("#wager").val() || "0", 10);
+                if (!wager || wager <= 0) {
+                    setMessage("WprowadŸ poprawn¹ kwotê zak³adu.", true);
+                    return;
+                }
+
+                // Disable button
+                $("#playBtn").prop("disabled", true);
+                setMessage("Spinning...", false);
+
+                // Pobierz token anty-forgery z wygenerowanego pola
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '@Url.Action("Spin","Games")',
+                    method: 'POST',
+                    data: { wager: wager },
+                    headers: { 'RequestVerificationToken': token },
+                    success: function (resp) {
+                        if (!resp.success) {
+                            setMessage(resp.message || "Error", true);
+                            $("#playBtn").prop("disabled", false);
+                            return;
+                        }
+
+                        // resp.numbers = [a,b,c]
+                        animateReels(resp.numbers, function () {
+                            if (resp.won) {
+                                setMessage("You won! Reward: " + resp.reward + " tokens. New balance: " + resp.balance, false);
+                            } else {
+                                setMessage("You lost. New balance: " + resp.balance, true);
+                            }
+
+                            // zaktualizuj pasek z balansem (w layout)
+                            $("#balance").text(resp.balance);
+
+                            $("#playBtn").prop("disabled", false);
+                        });
+                    },
+                    error: function () {
+                        setMessage("Server error", true);
+                        $("#playBtn").prop("disabled", false);
+                    }
+                });
+            });
+
+        })();
+    </script>
+}

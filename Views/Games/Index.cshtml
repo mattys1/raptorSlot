@@ -1,0 +1,19 @@
+@{
+    ViewData["Title"] = "Games";
+}
+
+<div class="container mt-4">
+    <h2>Games</h2>
+    <div class="row mt-3">
+        <div class="col-md-6 mb-4">
+            <div class="card border-dark shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Three Numbers</h4>
+                    <p>Bet tokens and spin 3 numbers. If all three match you win double your stake.</p>
+                    <a asp-controller="Games" asp-action="Play" asp-route-id="three" class="btn btn-primary">Play</a>
+                </div>
+            </div>
+        </div>
+        <!-- Dodaj kolejne kafelki gier tutaj -->
+    </div>
+</div>
