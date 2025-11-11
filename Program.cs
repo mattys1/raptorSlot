@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using raptorSlot.Services;
 using raptorSlot;
 using System.Diagnostics;
+using raptorSlot.Services.Games;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,7 @@ builder.Services.ConfigureApplicationCookie(
 
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<AdminPanelService>();
+builder.Services.AddScoped<NumberDrawGameService>();
 
 var app = builder.Build();
 
