@@ -17,7 +17,7 @@ namespace raptorSlot.Services.Games {
 	
 	public record RouletteChoice(
 		BetType BetType,
-		OneOf<int, int[]> Selected
+		int[] Selected
 	);
 
 	public record RouletteDraw(int Value);
@@ -40,37 +40,46 @@ namespace raptorSlot.Services.Games {
 		}
 
 		private Result<bool> CheckIfHasWon(RouletteChoice choice, RouletteDraw draw) {
+			Result<OneOf<int, int[]>> GetSelectedValuesSequence(int length) {
+				if(choice.Selected.Length != length) {
+					return Result.Failure<OneOf<int, int[]>>($"This bet type requires exactly {length} selected value{(length >1 ? "s" : "")}, but got {choice.Selected.Length}");
+				}
+				return length == 1
+					       ? Result.Success<OneOf<int, int[]>>(choice.Selected[0]) 
+					       : Result.Success<OneOf<int, int[]>>(choice.Selected);
+			}
+			
 			switch(choice.BetType) {
 				case BetType.RED_OR_BLACK: {
-					var choiceValue = choice.Selected.AsT0;
+					if(choice.Selected.Length != 1) {
+						return Result.Failure<bool>("This bet type requires exactly one selected value");
+					}
+					
+					var choiceValue = choice.Selected[0];
 					HashSet<int> redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
 					return redNumbers.Contains(draw.Value) == redNumbers.Contains(choiceValue);
 				}
 				case BetType.ODD_OR_EVEN: {
-					var choiceValue = choice.Selected.AsT0;
-					return draw.Value % 2 == choiceValue % 2;
+					return GetSelectedValuesSequence(1).Map(
+					val => draw.Value % 2 == val.AsT0 % 2 	
+					);
 				}
 				case BetType.STRAIGHT_UP: { 
-					var choiceValue = choice.Selected.AsT0;
-					Debug.Assert(choiceValue is >= 1 and <= 37, "Value chosen by user is out of range");	
-					return draw.Value == choiceValue;
+					return GetSelectedValuesSequence(1).Map(
+					val => draw.Value == val.AsT0  	
+					);
 				}
 				case BetType.SPLIT: {
-					var choiceValue = choice.Selected.AsT1;
-					if(choiceValue.Length != 2){
-						return Result.Failure<bool>("Split bet must have exactly two numbers selected");
-					}
-					
-					return choiceValue.Contains(draw.Value);
+					return GetSelectedValuesSequence(2)
+						.Ensure(val => Result.SuccessIf(val.AsT1[0] - val.AsT1[1] == 3, "Invalid split selection"))
+						.Map(val => val.AsT1.Contains(draw.Value));
 				}
 				case BetType.STREET: { 
-					var choiceValue = choice.Selected.AsT1;
-					if(choiceValue.Length != 3){
-						return Result.Failure<bool>("Street bet must have exactly three numbers selected");
-					}
-					
-					return choiceValue.Contains(draw.Value);
+					return GetSelectedValuesSequence(3)
+						.Ensure(val => 
+							Result.SuccessIf(val.AsT1.Select(n => n - val.AsT1.Min()).SequenceEqual([0, 1, 2]), "Invalid street selection")
+							).Map(val => val.AsT1.Contains(draw.Value));
 				}
 				default:
 					throw new UnreachableException("Unknown bet type");

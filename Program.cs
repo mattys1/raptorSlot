@@ -5,11 +5,14 @@ using Microsoft.AspNetCore.Identity;
 using raptorSlot.Services;
 using raptorSlot;
 using System.Diagnostics;
+using OneOf.Serialization.SystemTextJson;
+using raptorSlot.Services.Games;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services
+	.AddControllersWithViews();
 builder.Services.AddDbContext<AppDBContext>(
 		options => options
 			.UseSqlite(builder.Configuration.GetConnectionString("defaultConnection"))
@@ -41,6 +44,7 @@ builder.Services.ConfigureApplicationCookie(
 
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<AdminPanelService>();
+builder.Services.AddScoped<RouletteService>();
 
 var app = builder.Build();
 
