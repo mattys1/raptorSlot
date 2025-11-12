@@ -10,9 +10,10 @@ public abstract class GameServiceBase<TDrawResult>(UserManager<AppUser> userMana
 {
     public async Task<Result<Tuple<TDrawResult, Wager>>> Play(Wager wager, string userId)
     {
-        if(wager.isPremiumToken){
+        if(wager.isPremiumToken) {
             throw new NotImplementedException("NIE MA PREMIUM TOKENOW JESZCZE");
         }
+        
         var drawResult = Draw();
         var multiplierResult = GenerateMultiplierForDraw(drawResult);
         if(multiplierResult.IsFailure) {
@@ -38,6 +39,11 @@ public abstract class GameServiceBase<TDrawResult>(UserManager<AppUser> userMana
         }
         
         user.Tokens += tokenChange;
+        var updateResult = await userManager.UpdateAsync(user);
+        if(!updateResult.Succeeded){
+            return Result.Failure("Failed to update user tokens."); 
+        } 
+        
         return Result.Success();
     }
 }
