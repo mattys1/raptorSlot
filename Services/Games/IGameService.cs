@@ -39,6 +39,11 @@ public abstract class GameServiceBase<TDrawResult>(UserManager<AppUser> userMana
         }
         
         user.Tokens += tokenChange;
+        var updateResult = await userManager.UpdateAsync(user);
+        if(!updateResult.Succeeded){
+            return Result.Failure("Failed to update user tokens."); 
+        } 
+        
         return Result.Success();
     }
 }
