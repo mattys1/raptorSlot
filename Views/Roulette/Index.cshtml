@@ -1,3 +1,4 @@
+@using raptorSlot.Services.Games
 @{
     ViewBag.Title = "Roulette";
 }
@@ -10,11 +11,11 @@
     <div>
         <label>Bet Type:</label>
         <select id="betType">
-            <option value="0">STRAIGHT_UP</option>
-            <option value="1">SPLIT</option>
-            <option value="2">STREET</option>
-            <option value="3">RED_OR_BLACK</option>
-            <option value="4">ODD_OR_EVEN</option>
+            <option value="@((int)BetType.STRAIGHT_UP)">@BetType.STRAIGHT_UP</option>
+            <option value="@((int)BetType.SPLIT)">@BetType.SPLIT</option>
+            <option value="@((int)BetType.STREET)">@BetType.STREET</option>
+            <option value="@((int)BetType.RED_OR_BLACK)">@BetType.RED_OR_BLACK</option>
+            <option value="@((int)BetType.ODD_OR_EVEN)">@BetType.ODD_OR_EVEN</option>
         </select>
     </div>
     
@@ -34,25 +35,34 @@
 </div>
 
 <script>
-document.getElementById('playBtn').addEventListener('click', async () => {
-    const betType = parseInt(document.getElementById('betType').value);
-    const numbersInput = document.getElementById('selectedNumbers').value;
+    const play = async (wagerAmount, betType, selected) => {
+        const payload = {
+            wager: { wagerAmount, isPremiumToken: false },
+            rouletteChoice: { betType, selected },
+        };
+
+        const response = await fetch('/api/games/roulette/play', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        return {ok: response.ok, body: response}
+    }
+
+    document.getElementById('playBtn').addEventListener('click', async () => {
+        const betType = parseInt(document.getElementById('betType').value);
+        const numbersInput = document.getElementById('selectedNumbers').value;
     const wagerAmount = parseInt(document.getElementById('wagerAmount').value);
     
     const selected = numbersInput.split(',').map(n => parseInt(n.trim()));
     
-    const payload = {
-        wager: { wagerAmount, isPremiumToken: false },
-        rouletteChoice: { betType, selected },
-    };
+    const result = await play(wagerAmount, betType, selected);
     
-    const response = await fetch('/api/games/roulette/play', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    
-    const result = await response.json();
-    document.getElementById('result').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+    if(result.ok) {
+        document.getElementById('result').innerHTML = `<pre>${JSON.stringify(await result.body.json(), null, 2)}</pre>`;
+    } else {
+        document.getElementById('result').innerHTML = `<span style="color: red;">Error: ${await result.body.text()}</span>`;
+    }
 });
 </script>
