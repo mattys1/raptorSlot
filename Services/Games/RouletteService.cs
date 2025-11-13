@@ -61,9 +61,9 @@ namespace raptorSlot.Services.Games {
 					return redNumbers.Contains(draw.Value) == redNumbers.Contains(choiceValue);
 				}
 				case BetType.ODD_OR_EVEN: {
-					return GetSelectedValuesSequence(1).Map(
-					val => draw.Value % 2 == val.AsT0 % 2 	
-					);
+					return GetSelectedValuesSequence(1)
+						.Ensure(val => val.AsT0 is 0 or 1 ? Result.Success() : Result.Failure<bool>("Invalid selection for odd/even bet type"))
+						.Map(val => draw.Value % 2 == val.AsT0 % 2);
 				}
 				case BetType.STRAIGHT_UP: { 
 					return GetSelectedValuesSequence(1).Map(
