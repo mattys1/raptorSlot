@@ -34,22 +34,10 @@
     <div id="result" style="margin-top: 20px;"></div>
 </div>
 
+<script src="~/js/Roulette.js"></script>
 <script>
-    const play = async (wagerAmount, betType, selected) => {
-        const payload = {
-            wager: { wagerAmount, isPremiumToken: false },
-            rouletteChoice: { betType, selected },
-        };
-
-        const response = await fetch('/api/games/roulette/play', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        return {ok: response.ok, body: response}
-    }
-
+    /// <reference path="../wwwroot/js/Roulette.ts" />
+    
     document.getElementById('playBtn').addEventListener('click', async () => {
         const betType = parseInt(document.getElementById('betType').value);
         const numbersInput = document.getElementById('selectedNumbers').value;
@@ -57,12 +45,13 @@
     
     const selected = numbersInput.split(',').map(n => parseInt(n.trim()));
     
-    const result = await play(wagerAmount, betType, selected);
+    const result = await Play(wagerAmount, betType, selected);
     
     if(result.ok) {
-        document.getElementById('result').innerHTML = `<pre>${JSON.stringify(await result.body.json(), null, 2)}</pre>`;
+        console.log("Response:", result);
+        document.getElementById('result').innerHTML = `<pre>${JSON.stringify(result.body, null, 2)}</pre>`;
     } else {
-        document.getElementById('result').innerHTML = `<span style="color: red;">Error: ${await result.body.text()}</span>`;
+        document.getElementById('result').innerHTML = `<span style="color: red;">Error: ${result.body}</span>`;
     }
 });
 </script>

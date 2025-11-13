@@ -25,7 +25,10 @@ namespace raptorSlot.Controllers.Roulette {
 			var result = await rouletteService.Play(payload.Wager, payload.RouletteChoice, userIdResult.Value);
 
 			return result.IsSuccess
-				       ? Ok(result.Value)
+				       ? Ok(new {
+					       wager = result.Value.Item2,
+					       draw = result.Value.Item1
+				       })
 				       : BadRequest(result.Error);
 		}
 	}
