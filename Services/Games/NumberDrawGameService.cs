@@ -45,17 +45,13 @@ namespace raptorSlot.Services.Games
             return Result.Success(-1);
         }
 
-        // Wygodna metoda dla kontrolera: wywo³uje base.Play(...) i PERSYSTUJE zmianê salda
+        // Wygodna metoda dla kontrolera: wywo³uje base.Play(...) — base.Play ju¿ PERSYSTUJE zmianê salda,
+        // wiêc tutaj NIE wykonujemy ponownego update'u. Pobieramy zaktualizowane saldo z DB i zwracamy.
         public async Task<Result<(int[] Draw, int TokensDelta, int NewBalance)>> PlayNumberDrawAsync(Wager wager, string userId)
         {
             if (wager == null) return Result.Failure<(int[], int, int)>("Wager is null");
 
-            // Pobierz aktualne saldo przed wywo³aniem base.Play — u¿yjemy go do trwa³ego zapisu
-            var userBefore = await _userManager.FindByIdAsync(userId);
-            if (userBefore == null) return Result.Failure<(int[], int, int)>($"Cannot find user: {userId}");
-            var startingBalance = userBefore.Tokens;
-
-            // Wywo³anie logiki z klasy bazowej — ta metoda zmieni (w pamiêci) user.Tokens ale NIE zapisze do DB
+            // Wywo³anie logiki z klasy bazowej — ta metoda (GameServiceBase.Play) wykona ChangeTokensForUser(...) i zapisze do DB.
             var playResult = await Play(wager, userId); // metoda Play z GameServiceBase<TDrawResult>
             if (playResult.IsFailure) return Result.Failure<(int[], int, int)>(playResult.Error);
 
@@ -66,18 +62,15 @@ namespace raptorSlot.Services.Games
             // returnedWager.wagerAmount w bazowej implementacji to tokenChange (mo¿e byæ ujemne)
             int tokenChange = returnedWager.wagerAmount;
 
-            // Teraz ustawiamy trwa³e saldo: start + tokenChange
-            int newBalance = startingBalance + tokenChange;
-            if (newBalance < 0) newBalance = 0; // zabezpieczenie przed ujemnym stanem (opcjonalne)
-
-            // Zapisujemy do bazy (UpdateAsync) — to powoduje, ¿e zmiana bêdzie trwa³a
-            userBefore.Tokens = newBalance;
-            var updateResult = await _userManager.UpdateAsync(userBefore);
-            if (!updateResult.Succeeded)
+            // Pobierz zaktualizowane saldo z bazy — Play(...) ju¿ zapisa³ zmianê, wiêc to odzwierciedli aktualny stan.
+            var userAfter = await _userManager.FindByIdAsync(userId);
+            if (userAfter == null)
             {
-                _logger.LogError("Failed to persist user tokens for {UserId}. Errors: {Errors}", userId, updateResult.Errors);
-                return Result.Failure<(int[], int, int)>("Failed to persist user tokens");
+                _logger.LogError("User not found after Play for {UserId}.", userId);
+                return Result.Failure<(int[], int, int)>("Cannot find user after play");
             }
+
+            int newBalance = userAfter.Tokens;
 
             return Result.Success((draw, tokenChange, newBalance));
         }
