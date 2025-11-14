@@ -137,6 +137,7 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
                 }
 
                 this.result = result.body as PlayResponse;
+                console.log(this.result)
             } catch (e: unknown) {
                 const msg = e instanceof Error ? e.message : String(e);
                 this.error = 'Unexpected error: ' + msg;

@@ -10,7 +10,7 @@
     <div x-data="window.rouletteComponent(@((int)BetType.STRAIGHT_UP))">
         <div class="mb-3">
             <label class="form-label">Bet Type:</label>
-            <select x-model.number="betType" class="form-select">
+            <select x-model.number="betType" x-on:change="selectedNumbers = []; numbersInput = ''" class="form-select">
                 <option value="@((int)BetType.STRAIGHT_UP)">@BetType.STRAIGHT_UP</option>
                 <option value="@((int)BetType.SPLIT)">@BetType.SPLIT</option>
                 <option value="@((int)BetType.STREET)">@BetType.STREET</option>
@@ -39,8 +39,7 @@
                                 isSelected(0) ? 'border border-warning border-3' : ''
                             ]"
                             x-on:click="selectNumber(0)"
-                            style="height: 162px; width: 50px;"
-                            >
+                            style="height: 162px; width: 50px;">
                             0
                         </button>
                     </td>
@@ -100,15 +99,13 @@
         </button>
 
         <div id="result" class="mt-3">
-            <template x-if="error">
-                <span class="text-danger" x-text="error"></span>
-            </template>
-            <template x-if="!error && result">
+            <div x-show="error" class="alert alert-danger" x-text="error"></div>
+            <div x-show="!error && result">
                 <pre x-text="JSON.stringify(result, null, 2)"></pre>
-            </template>
+            </div>
         </div>
     </div>
 </div>
 
-<script src="//unpkg.com/alpinejs" defer></script>
 <script src="~/js/generated/Roulette.js"></script>
+<script src="//unpkg.com/alpinejs"></script>
