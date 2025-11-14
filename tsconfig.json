@@ -4,9 +4,10 @@
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": false,
+    "module": "None",
     "sourceMap": true,
     "target": "ES6",
-    "outDir": "wwwroot/js"
+    "outDir": "wwwroot/js/generated"
   },
   "include": [
     "scripts/**/*"

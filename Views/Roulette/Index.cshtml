@@ -7,10 +7,10 @@
 
 <div>
     <h3>Test Roulette Play</h3>
-    
+<div x-data="window.rouletteComponent(@((int)BetType.STRAIGHT_UP))">
     <div>
         <label>Bet Type:</label>
-        <select id="betType">
+        <select x-model.number="betType">
             <option value="@((int)BetType.STRAIGHT_UP)">@BetType.STRAIGHT_UP</option>
             <option value="@((int)BetType.SPLIT)">@BetType.SPLIT</option>
             <option value="@((int)BetType.STREET)">@BetType.STREET</option>
@@ -21,37 +21,28 @@
     
     <div>
         <label>Number(s) (comma-separated for SPLIT/STREET):</label>
-        <input type="text" id="selectedNumbers" placeholder="e.g., 5 or 1,2" />
+        <input type="text" x-model="numbersInput" placeholder="e.g., 5 or 1,2" />
     </div>
     
     <div>
         <label>Wager Amount:</label>
-        <input type="number" id="wagerAmount" value="10" />
+        <input type="number" x-model.number="wagerAmount" />
     </div>
     
-    <button id="playBtn">Play</button>
+    <button x-on:click="play" x-bind:disabled="loading">
+        <span x-show="!loading">Play</span>
+        <span x-show="loading">Playing...</span>
+    </button>
     
-    <div id="result" style="margin-top: 20px;"></div>
+    <div id="result" style="margin-top: 20px;">
+        <template x-if="error">
+            <span style="color: red;" x-text="error"></span>
+        </template>
+        <template x-if="!error && result">
+            <pre x-text="JSON.stringify(result, null, 2)"></pre>
+        </template>
+    </div>
 </div>
-
-<script src="~/js/Roulette.js"></script>
-<script>
-    /// <reference path="../wwwroot/js/Roulette.ts" />
-    
-    document.getElementById('playBtn').addEventListener('click', async () => {
-        const betType = parseInt(document.getElementById('betType').value);
-        const numbersInput = document.getElementById('selectedNumbers').value;
-    const wagerAmount = parseInt(document.getElementById('wagerAmount').value);
-    
-    const selected = numbersInput.split(',').map(n => parseInt(n.trim()));
-    
-    const result = await Play(wagerAmount, betType, selected);
-    
-    if(result.ok) {
-        console.log("Response:", result);
-        document.getElementById('result').innerHTML = `<pre>${JSON.stringify(result.body, null, 2)}</pre>`;
-    } else {
-        document.getElementById('result').innerHTML = `<span style="color: red;">Error: ${result.body}</span>`;
-    }
-});
-</script>
+</div>
+<script src="//unpkg.com/alpinejs" defer></script>
+<script src="~/js/generated/Roulette.js"></script>
