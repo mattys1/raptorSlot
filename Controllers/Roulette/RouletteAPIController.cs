@@ -24,12 +24,17 @@ namespace raptorSlot.Controllers.Roulette {
 
 			var result = await rouletteService.Play(payload.Wager, payload.RouletteChoice, userIdResult.Value);
 
-			return result.IsSuccess
-				       ? Ok(new {
-					       wager = result.Value.Item2,
-					       draw = result.Value.Item1
-				       })
-				       : BadRequest(result.Error);
-		}
+			if(result.IsSuccess) {
+				if(result.Value.Item2.wagerAmount > 0) {
+					TempData["GameResultMessage"] = $"You won! +{result.Value.Item2.wagerAmount} tokens!";
+					TempData["GameResult"] = "w";
+				} else {
+					TempData["GameResultMessage"] = $"You lost! {result.Value.Item2.wagerAmount} tokens...";
+					TempData["GameResult"] = "l";
+				}
+				return Ok(new { wager = result.Value.Item2, draw = result.Value.Item1 });
+			}
+    
+			return BadRequest(result.Error);}
 	}
 }
