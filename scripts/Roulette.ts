@@ -44,6 +44,7 @@ interface RouletteComponent {
     result: PlayResponse | null;
     error: string;
     play: () => Promise<void>;
+    rouletteGrid: () => NumberColor[];
 }
 
 // Factory used by Alpine: x-data="rouletteComponent()"
@@ -55,6 +56,19 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
         loading: false,
         result: null,
         error: '',
+        rouletteGrid: () => {
+            const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+
+            const numbers: NumberColor[] = [];
+            for (let num = 1; num <= 36; num++) {
+                numbers.push({
+                    value: num,
+                    color: redNumbers.includes(num) ? 'red' : 'black'
+                });
+            }
+
+            return numbers;
+        },
         async play() {
             this.loading = true;
             this.error = '';
@@ -86,6 +100,11 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
     };
 }
 // Make rouletteComponent available globally for the Razor view / Alpine
+
+interface NumberColor {
+    value: number
+    color: string
+}
 
 (window as unknown as {
     rouletteComponent: (initialBetType?: number) => RouletteComponent;

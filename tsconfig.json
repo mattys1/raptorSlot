@@ -6,7 +6,7 @@
     "removeComments": false,
     "module": "None",
     "sourceMap": true,
-    "target": "ES6",
+    "target": "es2024",
     "outDir": "wwwroot/js/generated"
   },
   "include": [
