@@ -43,8 +43,11 @@ interface RouletteComponent {
     loading: boolean;
     result: PlayResponse | null;
     error: string;
+    selectedNumbers: number[];
     play: () => Promise<void>;
     rouletteGrid: () => NumberColor[];
+    selectNumber: (num: number) => void;
+    isSelected: (num: number) => boolean;
 }
 
 // Factory used by Alpine: x-data="rouletteComponent()"
@@ -56,6 +59,8 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
         loading: false,
         result: null,
         error: '',
+        selectedNumbers: [] as number[],
+        
         rouletteGrid: () => {
             const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
@@ -69,6 +74,48 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
 
             return numbers;
         },
+
+        selectNumber(num: number) {
+            const BetType = {
+                STRAIGHT_UP: 0,
+                SPLIT: 1,
+                STREET: 2,
+                RED_OR_BLACK: 3,
+                ODD_OR_EVEN: 4
+            };
+
+            switch(this.betType) {
+                case BetType.STRAIGHT_UP:
+                case BetType.RED_OR_BLACK:
+                case BetType.ODD_OR_EVEN:
+                    this.selectedNumbers = [num];
+                    break;
+
+                case BetType.STREET:
+                    const columnStart = Math.floor((num - 1) / 3) * 3 + 1;
+                    this.selectedNumbers = [columnStart, columnStart + 1, columnStart + 2];
+                    break;
+
+                case BetType.SPLIT:
+                    if (this.selectedNumbers.includes(num)) {
+                        this.selectedNumbers = this.selectedNumbers.filter(n => n !== num);
+                    }
+                    else if (this.selectedNumbers.length >= 2) {
+                        this.selectedNumbers = [this.selectedNumbers[0], num];
+                    }
+                    else {
+                        this.selectedNumbers = [...this.selectedNumbers, num];
+                    }
+                    break;
+            }
+
+            this.numbersInput = this.selectedNumbers.join(',');
+        },
+
+        isSelected(num: number): boolean {
+            return this.selectedNumbers.includes(num);
+        },
+
         async play() {
             this.loading = true;
             this.error = '';

@@ -33,15 +33,28 @@
             <table class="table table-borderless m-0">
                 <tr>
                     <td rowspan="3" class="p-1">
-                        <div class="bg-success text-white fw-bold d-flex align-items-center justify-content-center rounded" style="height: 162px; width: 50px;">0</div>
+                        <button
+                            class="btn bg-success text-white fw-bold d-flex align-items-center justify-content-center rounded"
+                            :class="[
+                                isSelected(0) ? 'border border-warning border-3' : ''
+                            ]"
+                            x-on:click="selectNumber(0)"
+                            style="height: 162px; width: 50px;"
+                            >
+                            0
+                        </button>
                     </td>
                     <template x-for="(num, index) in rouletteGrid().filter((_, i) => i % 3 === 0)" :key="num.value">
                         <td class="p-1">
                             <button
                                 class="btn text-white fw-bold rounded"
-                                :class="num.color === 'red' ? 'bg-danger' : 'bg-dark'"
+                                :class="[
+                                    num.color === 'red' ? 'bg-danger' : 'bg-dark',
+                                    isSelected(num.value) ? 'border border-warning border-3' : ''
+                                ]"
                                 style="width: 50px; height: 50px;"
-                                x-text="num.value">
+                                x-text="num.value"
+                                x-on:click="selectNumber(num.value)">
                             </button>
                         </td>
                     </template>
@@ -51,9 +64,13 @@
                         <td class="p-1">
                             <button
                                 class="btn text-white fw-bold rounded"
-                                :class="num.color === 'red' ? 'bg-danger' : 'bg-dark'"
+                                :class="[
+                                    num.color === 'red' ? 'bg-danger' : 'bg-dark',
+                                    isSelected(num.value) ? 'border border-warning border-3' : ''
+                                ]"
                                 style="width: 50px; height: 50px;"
-                                x-text="num.value">
+                                x-text="num.value"
+                                x-on:click="selectNumber(num.value)">
                             </button>
                         </td>
                     </template>
@@ -63,9 +80,13 @@
                         <td class="p-1">
                             <button
                                 class="btn text-white fw-bold rounded"
-                                :class="num.color === 'red' ? 'bg-danger' : 'bg-dark'"
+                                :class="[
+                                    num.color === 'red' ? 'bg-danger' : 'bg-dark',
+                                    isSelected(num.value) ? 'border border-warning border-3' : ''
+                                ]"
                                 style="width: 50px; height: 50px;"
-                                x-text="num.value">
+                                x-text="num.value"
+                                x-on:click="selectNumber(num.value)">
                             </button>
                         </td>
                     </template>
