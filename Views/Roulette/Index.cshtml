@@ -34,8 +34,9 @@
                 <tr>
                     <td rowspan="3" class="p-1">
                         <button
-                            class="btn bg-success text-white fw-bold d-flex align-items-center justify-content-center rounded"
+                            class="btn text-white fw-bold d-flex align-items-center justify-content-center rounded"
                             :class="[
+                                getButtonClass(0, 'green'),
                                 isSelected(0) ? 'border border-warning border-3' : ''
                             ]"
                             x-on:click="selectNumber(0)"
@@ -48,7 +49,7 @@
                             <button
                                 class="btn text-white fw-bold rounded"
                                 :class="[
-                                    num.color === 'red' ? 'bg-danger' : 'bg-dark',
+                                    getButtonClass(num.value, num.color),
                                     isSelected(num.value) ? 'border border-warning border-3' : ''
                                 ]"
                                 style="width: 50px; height: 50px;"
@@ -64,7 +65,7 @@
                             <button
                                 class="btn text-white fw-bold rounded"
                                 :class="[
-                                    num.color === 'red' ? 'bg-danger' : 'bg-dark',
+                                    getButtonClass(num.value, num.color),
                                     isSelected(num.value) ? 'border border-warning border-3' : ''
                                 ]"
                                 style="width: 50px; height: 50px;"
@@ -80,7 +81,7 @@
                             <button
                                 class="btn text-white fw-bold rounded"
                                 :class="[
-                                    num.color === 'red' ? 'bg-danger' : 'bg-dark',
+                                    getButtonClass(num.value, num.color),
                                     isSelected(num.value) ? 'border border-warning border-3' : ''
                                 ]"
                                 style="width: 50px; height: 50px;"

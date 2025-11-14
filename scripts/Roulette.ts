@@ -48,6 +48,9 @@ interface RouletteComponent {
     rouletteGrid: () => NumberColor[];
     selectNumber: (num: number) => void;
     isSelected: (num: number) => boolean;
+    animateRoulette: (finalNumber: number) => Promise<void>;
+    getButtonClass: (num: number, color: string) => string;
+    highlightedNumber: number
 }
 
 // Factory used by Alpine: x-data="rouletteComponent()"
@@ -60,6 +63,35 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
         result: null,
         error: '',
         selectedNumbers: [] as number[],
+        highlightedNumber: null,
+        
+        getButtonClass(num: number, color: string): string {
+            if (this.highlightedNumber === num) {
+                return 'bg-warning';
+            }
+            if (this.result && this.result.draw.value === num && this.highlightedNumber === -1) {
+                return 'bg-primary';
+            }
+            return color === 'red' ? 'bg-danger' : (num === 0 ? 'bg-success' : 'bg-dark');
+        },
+        
+        async animateRoulette(finalNumber: number): Promise<void> {
+            const numbers = [0, ...Array.from({ length: 36 }, (_, i) => i + 1)];
+            const delayPerNumber = 3500 / numbers.length;
+            const iterations = 2;
+
+            for (let iter = 0; iter < iterations; iter++) {
+                for (const num of numbers) {
+                    this.highlightedNumber = num;
+                    await new Promise(resolve => setTimeout(resolve, delayPerNumber));
+                    
+                    if (iter === iterations - 1 && num === finalNumber) {
+                        this.highlightedNumber = -1; 
+                        return;
+                    }
+                }
+            }
+        },
         
         rouletteGrid: () => {
             const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
@@ -137,7 +169,12 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
                 }
 
                 this.result = result.body as PlayResponse;
-                console.log(this.result)
+
+                await this.animateRoulette(this.result.draw.value);
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             } catch (e: unknown) {
                 const msg = e instanceof Error ? e.message : String(e);
                 this.error = 'Unexpected error: ' + msg;
@@ -147,7 +184,6 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
         },
     };
 }
-// Make rouletteComponent available globally for the Razor view / Alpine
 
 interface NumberColor {
     value: number
