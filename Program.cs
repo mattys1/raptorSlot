@@ -47,6 +47,7 @@ options => {
 
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<AdminPanelService>();
+builder.Services.AddScoped<NumberDrawGameService>();
 builder.Services.AddScoped<RouletteService>();
 
 var app = builder.Build();

@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Games";
+}
+
+<h2>Gry</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Losowanie 3 liczb</h5>
+                <p class="card-text">Prosta gra — obstaw liczbê ¿etonów i wylosuj 3 liczby. Wszystkie trzy równe -> wygrywasz podwójnie.</p>
+                <a href="@Url.Action("NumberDraw", "Games")" class="btn btn-primary">Play</a>
+            </div>
+        </div>
+    </div>
+</div>

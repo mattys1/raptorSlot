@@ -1,0 +1,204 @@
+@{
+    ViewData["Title"] = "Losowanie 3 liczb";
+    var balance = (int?)ViewData["Balance"] ?? 0;
+}
+
+<h2>Losowanie 3 liczb</h2>
+
+<div class="card p-3 mb-3" style="max-width: 560px;">
+    <div class="d-flex justify-content-between mb-2">
+        <div>
+            <strong>Saldo ¿etonów:</strong>
+            <span id="balance">@balance</span>
+        </div>
+        <div id="balanceWarning" class="text-danger" style="display:none;">
+            Brak wystarczaj¹cych ¿etonów.
+        </div>
+    </div>
+
+    <div id="drawArea" class="text-center display-4 mb-3">
+        <span id="n0">1</span>
+        <span id="n1">1</span>
+        <span id="n2">1</span>
+    </div>
+
+    <div class="mb-3">
+        <label for="wagerInput" class="form-label">Ile ¿etonów chcesz obstawiæ?</label>
+        <input id="wagerInput" type="number" min="1" class="form-control" value="1" />
+    </div>
+
+    <div class="d-flex gap-2">
+        <button id="playBtn" class="btn btn-success">Play</button>
+        <a href="@Url.Action("Index","Games")" class="btn btn-secondary">Powrót do listy gier</a>
+    </div>
+
+    <div id="message" class="mt-3"></div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+(function(){
+    const nEls = [document.getElementById('n0'), document.getElementById('n1'), document.getElementById('n2')];
+    const playBtn = document.getElementById('playBtn');
+    const wagerInput = document.getElementById('wagerInput');
+    const msg = document.getElementById('message');
+    const balanceEl = document.getElementById('balance');
+    const balanceWarning = document.getElementById('balanceWarning');
+
+    // Parsowanie balansu pocz¹tkowego ¿etonów z serwera
+    let balance = parseInt(balanceEl.textContent, 10) || 0;
+
+    function updateUiForBalance() {
+        if (balance <= 0) {
+            playBtn.disabled = true;
+            balanceWarning.style.display = 'block';
+        } else {
+            playBtn.disabled = false;
+            balanceWarning.style.display = 'none';
+        }
+    }
+
+    updateUiForBalance();
+
+    function animateShuffle(duration = 900){
+        return new Promise(resolve => {
+            const start = Date.now();
+            const iv = setInterval(()=>{
+                nEls.forEach(el => el.textContent = Math.floor(Math.random()*9)+1);
+                if (Date.now() - start > duration){
+                    clearInterval(iv);
+                    resolve();
+                }
+            }, 50);
+        });
+    }
+
+    function showMessage(html, type='info') {
+        const wrapper = document.createElement('div');
+        wrapper.className = `alert alert-${type} alert-dismissible fade show`;
+        wrapper.setAttribute('role','alert');
+        wrapper.innerHTML = html;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-close';
+        btn.setAttribute('aria-label','Close');
+        btn.addEventListener('click', ()=> wrapper.remove());
+
+        wrapper.appendChild(btn);
+        msg.prepend(wrapper);
+    }
+
+    function updateNavTokens(newTokens, newSuperTokens) {
+        try {
+            const navTokensEl = document.getElementById('navTokensCount');
+            if (navTokensEl && newTokens !== undefined && newTokens !== null) {
+                navTokensEl.textContent = newTokens;
+            }
+            const navSuperEl = document.getElementById('navSuperTokensCount');
+            if (navSuperEl && newSuperTokens !== undefined && newSuperTokens !== null) {
+                navSuperEl.textContent = newSuperTokens;
+            }
+        } catch(e) {
+            console.warn('Nie uda³o siê zaktualizowaæ licznika w nav', e);
+        }
+    }
+
+    async function refreshNavBalance() {
+        try {
+            const r = await fetch('@Url.Action("GetBalance","Games")', {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store'
+            });
+            if (!r.ok) return;
+            const json = await r.json();
+            if (json && json.success) {
+                if (typeof json.tokens !== 'undefined') {
+                    if (parseInt(json.tokens,10) !== balance) {
+                        balance = parseInt(json.tokens,10);
+                        balanceEl.textContent = balance;
+                        updateUiForBalance();
+                    }
+                    updateNavTokens(json.tokens, json.superTokens);
+                }
+            }
+        } catch(err) {
+            console.warn('refreshNavBalance failed', err);
+        }
+    }
+
+    document.getElementById('playBtn').addEventListener('click', async ()=>{
+        const wager = parseInt(wagerInput.value,10);
+        if (!wager || wager <= 0){ showMessage('Podaj poprawn¹ liczbê ¿etonów.', 'warning'); return; }
+
+        if (balance <= 0) { showMessage('Nie masz ¿etonów — nie mo¿esz graæ.', 'warning'); updateUiForBalance(); return; }
+
+        if (wager > balance) { showMessage('Nie mo¿esz obstawiæ wiêcej ni¿ masz na koncie.', 'warning'); return; }
+
+        playBtn.disabled = true;
+        await animateShuffle(1000);
+
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput ? tokenInput.value : '';
+
+        const form = new FormData();
+        form.append('wager', wager);
+
+        try{
+            const r = await fetch('@Url.Action("PlayNumberDraw","Games")', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': token },
+                body: form,
+                cache: 'no-store'
+            });
+
+            if (!r.ok) {
+                let txt;
+                try { txt = await r.text(); } catch(e) { txt = r.statusText || 'B³¹d serwera'; }
+                showMessage(`B³¹d serwera: ${r.status} ${txt}`, 'danger');
+                await refreshNavBalance();
+                return;
+            }
+
+            const json = await r.json();
+
+            if (!json.success){
+                showMessage(json.error || 'B³¹d', 'danger');
+            } else {
+                const draw = json.draw;
+                nEls.forEach((el,i)=> el.textContent = draw[i]);
+
+                balance = parseInt(json.balance, 10) || balance;
+                balanceEl.textContent = balance;
+                updateUiForBalance();
+
+                if (typeof json.tokens !== 'undefined') {
+                    updateNavTokens(json.tokens, json.superTokens);
+                } else {
+                    updateNavTokens(balance, null);
+                }
+
+                const delta = json.delta || json.tokensDelta || 0;
+                if (delta > 0){
+                    showMessage(`Wygra³eœ! Zmiana ¿etonów: +${delta}. Nowy stan: ${balance}`, 'success');
+                } else {
+                    showMessage(`Przegra³eœ. Zmiana ¿etonów: ${delta}. Nowy stan: ${balance}`, 'warning');
+                }
+            }
+        } catch(e){
+            showMessage('B³¹d po³¹czenia. Spróbuj ponownie.', 'danger');
+            console.error(e);
+            await refreshNavBalance();
+        } finally {
+            if (balance > 0) playBtn.disabled = false;
+            else updateUiForBalance();
+        }
+    });
+
+})();
+    </script>
+}
