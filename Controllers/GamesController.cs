@@ -28,6 +28,11 @@ namespace raptorSlot.Controllers
         public async Task<IActionResult> NumberDraw()
         {
             var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
@@ -41,17 +46,84 @@ namespace raptorSlot.Controllers
             return View();
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PlayNumberDraw([FromForm] int wager)
         {
             var userId = _userManager.GetUserId(User);
-            var w = new Wager(wager);
-            var res = await _numberGame.PlayNumberDrawAsync(w, userId);
-            if (res.IsFailure) return Json(new { success = false, error = res.Error });
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, error = "Not authenticated" });
+            }
 
-            return Json(new { success = true, draw = res.Value.Draw, delta = res.Value.TokensDelta, balance = res.Value.NewBalance });
+            try
+            {
+                var w = new Wager(wager);
+                var res = await _numberGame.PlayNumberDrawAsync(w, userId);
+
+                if (res.IsFailure)
+                {
+                    var userOnFailure = await _userManager.FindByIdAsync(userId);
+                    return Json(new
+                    {
+                        success = false,
+                        error = res.Error,
+                        tokens = userOnFailure?.Tokens ?? 0,
+                        superTokens = userOnFailure?.SuperTokens ?? 0
+                    });
+                }
+
+                var userAfter = await _userManager.FindByIdAsync(userId);
+                if (userAfter == null)
+                {
+                    return Json(new { success = false, error = "User not found after play" });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    draw = res.Value.Draw,
+                    delta = res.Value.TokensDelta,
+                    balance = res.Value.NewBalance,
+                    tokens = userAfter.Tokens,
+                    superTokens = userAfter.SuperTokens
+                });
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                }
+                catch {}
+
+                var userAfterEx = await _userManager.FindByIdAsync(userId);
+                return Json(new
+                {
+                    success = false,
+                    error = "Internal server error",
+                    details = ex.Message,
+                    tokens = userAfterEx?.Tokens ?? 0,
+                    superTokens = userAfterEx?.SuperTokens ?? 0
+                });
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetBalance()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Json(new { success = false, error = "User not found" });
+            }
+
+            return Json(new
+            {
+                success = true,
+                tokens = user.Tokens,
+                superTokens = user.SuperTokens
+            });
         }
     }
 }

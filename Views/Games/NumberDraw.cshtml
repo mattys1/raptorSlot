@@ -47,10 +47,9 @@
     const balanceEl = document.getElementById('balance');
     const balanceWarning = document.getElementById('balanceWarning');
 
-    // Parsuj initial balance z serwera
+    // Parsowanie balansu pocz¹tkowego ¿etonów z serwera
     let balance = parseInt(balanceEl.textContent, 10) || 0;
 
-    // Jeœli brak œrodków, zablokuj przycisk
     function updateUiForBalance() {
         if (balance <= 0) {
             playBtn.disabled = true;
@@ -76,9 +75,7 @@
         });
     }
 
-    // Pomoc: poka¿ alert i nie usuwaj go automatycznie. Dodaj przycisk zamkniêcia.
     function showMessage(html, type='info') {
-        // type: 'success', 'warning', 'danger', 'info'
         const wrapper = document.createElement('div');
         wrapper.className = `alert alert-${type} alert-dismissible fade show`;
         wrapper.setAttribute('role','alert');
@@ -91,14 +88,49 @@
         btn.addEventListener('click', ()=> wrapper.remove());
 
         wrapper.appendChild(btn);
-
-        // usuñ poprzednie komunikaty jeœli chcesz tylko 1 (tu zachowujemy wszystkie, ale mo¿esz czyœciæ msg.innerHTML)
-        // msg.innerHTML = '';
-        msg.prepend(wrapper); // nowe komunikaty pojawiaj¹ siê na górze
+        msg.prepend(wrapper);
     }
 
-    playBtn.addEventListener('click', async ()=>{
-        // Walidacja po stronie klienta: czy ma wystarczaj¹co ¿etonów?
+    function updateNavTokens(newTokens, newSuperTokens) {
+        try {
+            const navTokensEl = document.getElementById('navTokensCount');
+            if (navTokensEl && newTokens !== undefined && newTokens !== null) {
+                navTokensEl.textContent = newTokens;
+            }
+            const navSuperEl = document.getElementById('navSuperTokensCount');
+            if (navSuperEl && newSuperTokens !== undefined && newSuperTokens !== null) {
+                navSuperEl.textContent = newSuperTokens;
+            }
+        } catch(e) {
+            console.warn('Nie uda³o siê zaktualizowaæ licznika w nav', e);
+        }
+    }
+
+    async function refreshNavBalance() {
+        try {
+            const r = await fetch('@Url.Action("GetBalance","Games")', {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store'
+            });
+            if (!r.ok) return;
+            const json = await r.json();
+            if (json && json.success) {
+                if (typeof json.tokens !== 'undefined') {
+                    if (parseInt(json.tokens,10) !== balance) {
+                        balance = parseInt(json.tokens,10);
+                        balanceEl.textContent = balance;
+                        updateUiForBalance();
+                    }
+                    updateNavTokens(json.tokens, json.superTokens);
+                }
+            }
+        } catch(err) {
+            console.warn('refreshNavBalance failed', err);
+        }
+    }
+
+    document.getElementById('playBtn').addEventListener('click', async ()=>{
         const wager = parseInt(wagerInput.value,10);
         if (!wager || wager <= 0){ showMessage('Podaj poprawn¹ liczbê ¿etonów.', 'warning'); return; }
 
@@ -106,17 +138,12 @@
 
         if (wager > balance) { showMessage('Nie mo¿esz obstawiæ wiêcej ni¿ masz na koncie.', 'warning'); return; }
 
-        // zablokuj przycisk na czas losowania/¿¹dania
         playBtn.disabled = true;
-
-        // animacja tasowania
         await animateShuffle(1000);
 
-        // Pobierz token anty-CSRF z ukrytego inputa generowanego przez @Html.AntiForgeryToken()
         const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
         const token = tokenInput ? tokenInput.value : '';
 
-        // Przygotuj dane
         const form = new FormData();
         form.append('wager', wager);
 
@@ -125,15 +152,15 @@
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'RequestVerificationToken': token },
-                body: form
+                body: form,
+                cache: 'no-store'
             });
 
-            // Najpierw sprawdŸ status HTTP
             if (!r.ok) {
-                // Spróbuj odczytaæ JSON z b³êdem lub tekst
                 let txt;
                 try { txt = await r.text(); } catch(e) { txt = r.statusText || 'B³¹d serwera'; }
                 showMessage(`B³¹d serwera: ${r.status} ${txt}`, 'danger');
+                await refreshNavBalance();
                 return;
             }
 
@@ -145,27 +172,33 @@
                 const draw = json.draw;
                 nEls.forEach((el,i)=> el.textContent = draw[i]);
 
-                // Aktualizujemy saldo w UI (serwer zwraca aktualne balance)
                 balance = parseInt(json.balance, 10) || balance;
                 balanceEl.textContent = balance;
                 updateUiForBalance();
 
-                if (json.delta > 0){
-                    showMessage(`Wygra³eœ! Zmiana ¿etonów: +${json.delta}. Nowy stan: ${json.balance}`, 'success');
+                if (typeof json.tokens !== 'undefined') {
+                    updateNavTokens(json.tokens, json.superTokens);
                 } else {
-                    showMessage(`Przegra³eœ. Zmiana ¿etonów: ${json.delta}. Nowy stan: ${json.balance}`, 'warning');
+                    updateNavTokens(balance, null);
+                }
+
+                const delta = json.delta || json.tokensDelta || 0;
+                if (delta > 0){
+                    showMessage(`Wygra³eœ! Zmiana ¿etonów: +${delta}. Nowy stan: ${balance}`, 'success');
+                } else {
+                    showMessage(`Przegra³eœ. Zmiana ¿etonów: ${delta}. Nowy stan: ${balance}`, 'warning');
                 }
             }
         } catch(e){
-            // Jeœli fetch rzuci wyj¹tek — poka¿ trwa³y b³¹d (np. po³¹czenia)
             showMessage('B³¹d po³¹czenia. Spróbuj ponownie.', 'danger');
             console.error(e);
+            await refreshNavBalance();
         } finally {
-            // Odblokuj tylko jeœli saldo > 0 (je¿eli saldo <=0 updateUiForBalance zablokuje)
             if (balance > 0) playBtn.disabled = false;
             else updateUiForBalance();
         }
     });
+
 })();
     </script>
 }
