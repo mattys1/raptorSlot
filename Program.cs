@@ -5,74 +5,81 @@ using Microsoft.AspNetCore.Identity;
 using raptorSlot.Services;
 using raptorSlot;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
+using OneOf.Serialization.SystemTextJson;
+using raptorSlot.Services.Games;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services
+	.AddControllersWithViews()
+	.AddJsonOptions(options => {
+		options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+	});
 builder.Services.AddDbContext<AppDBContext>(
-		options => options
-			.UseSqlite(builder.Configuration.GetConnectionString("defaultConnection"))
+options => options
+	.UseSqlite(builder.Configuration.GetConnectionString("defaultConnection"))
 );
 builder.Services.AddIdentity<AppUser, IdentityRole>()
 	.AddEntityFrameworkStores<AppDBContext>()
 	.AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(
-		options => {
-			options.Password.RequireDigit = false;
-			options.Password.RequireLowercase = false;
-			options.Password.RequireUppercase = false;
-			options.Password.RequireNonAlphanumeric = false;
-			options.Password.RequiredLength = 1;
-			options.Password.RequiredUniqueChars = 0;
-			options.SignIn.RequireConfirmedEmail = false;
-			options.SignIn.RequireConfirmedAccount = false;
-		}
+options => {
+	options.Password.RequireDigit = false;
+	options.Password.RequireLowercase = false;
+	options.Password.RequireUppercase = false;
+	options.Password.RequireNonAlphanumeric = false;
+	options.Password.RequiredLength = 1;
+	options.Password.RequiredUniqueChars = 0;
+	options.SignIn.RequireConfirmedEmail = false;
+	options.SignIn.RequireConfirmedAccount = false;
+}
 );
 
 builder.Services.ConfigureApplicationCookie(
-	options => {
-		options.LoginPath = "/Account/Login";
-		options.AccessDeniedPath = "/Account/AccessDenied";
-	}
+options => {
+	options.LoginPath = "/Account/Login";
+	options.AccessDeniedPath = "/Account/AccessDenied";
+}
 );
 
 
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<AdminPanelService>();
+builder.Services.AddScoped<RouletteService>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+	app.UseExceptionHandler("/Home/Error");
+	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+	app.UseHsts();
 }
 
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+	var services = scope.ServiceProvider;
+	var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+	var userManager = services.GetRequiredService<UserManager<AppUser>>();
 
-    if(!await roleManager.RoleExistsAsync(Roles.ADMIN)) {
-        await roleManager.CreateAsync(new IdentityRole(Roles.ADMIN));
-    }
+	if(!await roleManager.RoleExistsAsync(Roles.ADMIN)) {
+		await roleManager.CreateAsync(new IdentityRole(Roles.ADMIN));
+	}
 
-    var adminUser = await userManager.FindByEmailAsync(EnvVars.ADMIN_EMAIL);
-    if(adminUser == null) {
-        adminUser = new AppUser { UserName = EnvVars.ADMIN_USERNAME, Email = EnvVars.ADMIN_EMAIL, EmailConfirmed = true };
-        var createResult = await userManager.CreateAsync(adminUser, EnvVars.ADMIN_PASSWORD);
+	var adminUser = await userManager.FindByEmailAsync(EnvVars.ADMIN_EMAIL);
+	if(adminUser == null) {
+		adminUser = new AppUser { UserName = EnvVars.ADMIN_USERNAME, Email = EnvVars.ADMIN_EMAIL, EmailConfirmed = true };
+		var createResult = await userManager.CreateAsync(adminUser, EnvVars.ADMIN_PASSWORD);
 		Debug.Assert(createResult.Succeeded, "Failed to create admin user");	
-    }
+	}
 
-    if(!await userManager.IsInRoleAsync(adminUser, Roles.ADMIN)) {
-        await userManager.AddToRoleAsync(adminUser, Roles.ADMIN);
+	if(!await userManager.IsInRoleAsync(adminUser, Roles.ADMIN)) {
+		await userManager.AddToRoleAsync(adminUser, Roles.ADMIN);
 
-    }
+	}
 }
 
 app.UseHttpsRedirection();
@@ -84,8 +91,8 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}"
+name: "default",
+pattern: "{controller=Home}/{action=Index}/{id?}"
 ).WithStaticAssets();
 
 // app.MapRazorPages();
