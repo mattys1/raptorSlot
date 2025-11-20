@@ -49,7 +49,7 @@ namespace raptorSlot.Services.Games
             int[] draw = tuple.Item1;
             Wager returnedWager = tuple.Item2;
 
-            int tokenChange = returnedWager.wagerAmount;
+            int tokenChange = returnedWager.WagerAmount;
 
             var userAfter = await _userManager.FindByIdAsync(userId);
             if (userAfter == null)

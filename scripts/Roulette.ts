@@ -15,10 +15,11 @@ interface PlayResponse {
 async function PlayFetch(
     wagerAmount: number,
     betType: number,
-    selected: number[]
+    selected: number[],
+    usePremiumTokens: Boolean
 ): Promise<{ ok: boolean; body: PlayResponse | string }> {
     const payload = {
-        wager: { wagerAmount, isPremiumToken: false },
+        wager: { wagerAmount, isPremiumToken: usePremiumTokens },
         rouletteChoice: { betType, selected },
     };
 
@@ -35,7 +36,6 @@ async function PlayFetch(
     });
 }
 
-// Alpine component typing
 interface RouletteComponent {
     betType: number;
     numbersInput: string;
@@ -51,9 +51,9 @@ interface RouletteComponent {
     animateRoulette: (finalNumber: number) => Promise<void>;
     getButtonClass: (num: number, color: string) => string;
     highlightedNumber: number
+    usePremiumTokens: boolean;
 }
 
-// Factory used by Alpine: x-data="rouletteComponent()"
 function rouletteComponent(initialBetType: number = 0): RouletteComponent {
     return {
         betType: initialBetType,
@@ -64,6 +64,7 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
         error: '',
         selectedNumbers: [] as number[],
         highlightedNumber: null,
+        usePremiumTokens: false,
         
         getButtonClass(num: number, color: string): string {
             if (this.highlightedNumber === num) {
@@ -161,7 +162,7 @@ function rouletteComponent(initialBetType: number = 0): RouletteComponent {
                     .map(n => parseInt(n, 10))
                     .filter(n => !Number.isNaN(n));
 
-                const result = await PlayFetch(this.wagerAmount, this.betType, selected);
+                const result = await PlayFetch(this.wagerAmount, this.betType, selected, this.usePremiumTokens);
 
                 if (!result.ok) {
                     this.error = `Error: ${result.body}`;

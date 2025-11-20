@@ -20,9 +20,22 @@
 
         <div class="mb-3">
             <label class="form-label">Wager Amount:</label>
-            <input type="number" x-model.number="wagerAmount" class="form-control" />
+            <div class="row align-items-center">
+                <div class="col-lg">
+                    <input type="number" x-model.number="wagerAmount" class="form-control" />
+                </div>
+                
+                <div class="col-auto">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="premiumTokens" x-on:change="usePremiumTokens = !usePremiumTokens"/>
+                        <label class="form-check-label" for="premiumTokens">
+                            Use premium tokens.
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
-
+        
         <div class="d-inline-block">
             <table class="table table-borderless m-0">
                 <tr>
@@ -89,7 +102,7 @@
         </div>
 
         <div class="mt-3">
-            <button x-on:click="play" x-bind:disabled="loading" class="btn btn-primary mt-3">
+            <button x-on:click="play" x-bind:disabled="loading" class="btn mt-3" :class="usePremiumTokens ? 'btn-warning' : 'btn-primary'">
                 <span x-show="!loading">Play</span>
                 <span x-show="loading">Playing...</span>
             </button>
