@@ -49,6 +49,7 @@ builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<AdminPanelService>();
 builder.Services.AddScoped<NumberDrawGameService>();
 builder.Services.AddScoped<RouletteService>();
+builder.Services.AddScoped<AvatarService>();
 
 var app = builder.Build();
 
