@@ -2,6 +2,7 @@ using CSharpFunctionalExtensions;
 using raptorSlot.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace raptorSlot.DAL {
 	public class AppDBContext(DbContextOptions<AppDBContext> options, AvatarPathFactory avatarPathFactory) : IdentityDbContext<AppUser>(options) {
@@ -10,12 +11,12 @@ namespace raptorSlot.DAL {
 			base.OnModelCreating(modelBuilder);
 
 			modelBuilder.Entity<AppUser>()
-				.Property(e => e.AvatarUri)
+				.Property(e => e.AvatarPath)
 				.HasConversion(
 				m => m.HasValue
 					     ? m.Value.Path
-					     : null,
-				s => s != null
+					     : "",
+				s => !s.IsNullOrEmpty()
 					     ? Maybe.From(avatarPathFactory.FromPath(s))
 					     : Maybe.None
 				);
