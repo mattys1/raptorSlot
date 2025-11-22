@@ -25,4 +25,13 @@
     <button type="submit" class="btn btn-primary">Upload</button>
 </form>
 
+<form asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AvatarController))"
+      asp-action="@nameof(AvatarController.DeleteAvatar)"
+      method="post"
+      class="mt-3"
+      >
+    
+    <button type="submit" class="btn btn-danger">Delete Avatar</button>
+</form>
+
 <div asp-validation-summary="All" class="text-danger mt-3"></div>

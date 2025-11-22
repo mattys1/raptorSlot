@@ -8,6 +8,6 @@ namespace raptorSlot.Models {
 
         public int Tokens { get; set; } = 0;
         public int SuperTokens { get; set; } = 0;
-        public Maybe<AvatarPath> AvatarUri { get; set; }= Maybe.None;
+        public Maybe<AvatarPath> AvatarPath { get; set; } = Maybe.None;
 	}
 }

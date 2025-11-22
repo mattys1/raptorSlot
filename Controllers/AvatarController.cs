@@ -20,6 +20,24 @@ namespace raptorSlot.Controllers {
 		}
 		
 		[HttpPost]
+		public async Task<IActionResult> DeleteAvatar() {
+			var user = await userManager.GetUserAsync(User);
+			if(user == null) {
+				ModelState.AddModelError(string.Empty, "Couldn't find user.");
+				return View(nameof(Index), user);
+			}
+			
+			var result = await avatarService.RemoveUserAvatar(user);
+			if(result.IsFailure){
+				ModelState.AddModelError(string.Empty, result.Error);
+				
+				return View(nameof(Index), user);
+			}
+
+			return RedirectToAction(nameof(HomeController.Index), ControllerStripper.StripControllerSuffix(nameof(HomeController)));
+		}
+		
+		[HttpPost]
 		public async Task<IActionResult> UploadAvatar(IFormFile? image) {
 			var user = await userManager.GetUserAsync(User);
 			

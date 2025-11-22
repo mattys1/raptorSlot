@@ -12,7 +12,7 @@ namespace raptorSlot.Services {
 		
 		#pragma warning disable CS1998
 		public async Task<Result<Maybe<Image>>> GetUserAvatar(AppUser user) {
-			return user.AvatarUri.Match(
+			return user.AvatarPath.Match(
 			path => {
 				try {
 					var image = Image.Load(path.Path);
@@ -41,7 +41,36 @@ namespace raptorSlot.Services {
 				return Result.Failure($"User {updatedUser} not found when updating avatar path");
 			}
 
-			updatedUser.AvatarUri = path;
+			updatedUser.AvatarPath = path;
+			var updateResult = await userManager.UpdateAsync(updatedUser);
+
+			return Result.SuccessIf(updateResult.Succeeded, $"Failed to update user: {updatedUser} avatar path");
+		}
+		
+		public async Task<Result> RemoveUserAvatar(AppUser user) {
+			var updatedUser = await userManager.FindByIdAsync(user.Id);
+			if(updatedUser == null) {
+				return Result.Failure($"User {updatedUser} not found when removing avatar path");
+			}
+
+			var deleted = user.AvatarPath.Match(
+			path => {
+				try{
+					File.Delete(path.Path);
+					return Result.Success();
+				}
+				catch (Exception e){
+					return Result.Failure($"Failed to delete avatar image file: {e.Message}");
+				}
+			},
+			() => Result.Failure($"User: {updatedUser} does not have an avatar to delete")
+			);
+
+			if(deleted.IsFailure) {
+				return deleted;
+			}
+
+			updatedUser.AvatarPath = Maybe.None;
 			var updateResult = await userManager.UpdateAsync(updatedUser);
 
 			return Result.SuccessIf(updateResult.Succeeded, $"Failed to update user: {updatedUser} avatar path");
