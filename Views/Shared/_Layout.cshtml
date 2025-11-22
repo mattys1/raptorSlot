@@ -67,8 +67,13 @@
                     </li>
                     
                     <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller=@ControllerStripper.StripControllerSuffix(nameof(AvatarController)) asp-action="@nameof(AvatarController.Index)">Change User Avatar</a>
-                        </li>
+                        <a class="nav-link text-dark" asp-controller=@ControllerStripper.StripControllerSuffix(nameof(AvatarController)) asp-action="@nameof(AvatarController.Index)">Change User Avatar</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <img src="@Url.Action(nameof(AvatarController.GetSelfAvatar), ControllerStripper.StripControllerSuffix(nameof(AvatarController)))"  alt="Avatar" style="height:40px;width:40px;border-radius:50%;"
+                                  onerror="this.alt=''; this.style.display='none';" />
+                    </li>
                     }
                     <!--<button type="submit">Log out</button>-->
                 </ul>
