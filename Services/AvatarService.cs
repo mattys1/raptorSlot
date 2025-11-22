@@ -7,8 +7,8 @@ using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 
 namespace raptorSlot.Services {
-	public class AvatarService(UserManager<AppUser> userManager) {
-		private readonly int _avatarSize = 256;
+	public class AvatarService(UserManager<AppUser> userManager, IWebHostEnvironment webHostEnvironment, AvatarPathFactory avatarPathFactory) {
+		private const int AvatarSize = 256;
 		
 		#pragma warning disable CS1998
 		public async Task<Result<Maybe<Image>>> GetUserAvatar(AppUser user) {
@@ -25,7 +25,7 @@ namespace raptorSlot.Services {
 			() => Result.Success(Maybe<Image>.None)
 			);
 		}
-		#pragma warning restore CS1998
+		#pragma  warning restore CS1998
 
 		public async Task<Result> SetUserAvatar(AppUser user, Image image) {
 			var resizedImage = ResizeAvatarImage(image);
@@ -38,28 +38,28 @@ namespace raptorSlot.Services {
 
 			var updatedUser = await userManager.FindByIdAsync(user.Id);
 			if (updatedUser == null) {
-				return Result.Failure($"User {user} not found when updating avatar path");
+				return Result.Failure($"User {updatedUser} not found when updating avatar path");
 			}
 
 			updatedUser.AvatarUri = path;
 			var updateResult = await userManager.UpdateAsync(updatedUser);
 
-			return Result.SuccessIf(updateResult.Succeeded, $"Failed to update user: {user} avatar path");
+			return Result.SuccessIf(updateResult.Succeeded, $"Failed to update user: {updatedUser} avatar path");
 		}
 		
 		private Image ResizeAvatarImage(Image image) {
 			image.Mutate(x => x.Resize(new ResizeOptions {
-				Size = new Size(_avatarSize, _avatarSize),
+				Size = new Size(AvatarSize, AvatarSize),
 				Mode = ResizeMode.Stretch
 			}));
 			return image;
 		}
 
 		private async Task<Result<AvatarPath>> SaveAvatar(AppUser user, Image image) {
-			var path = new AvatarPath(user.Id);
+			var path = avatarPathFactory.FromUserId(new Guid(user.Id));
 
 			try {
-				Directory.CreateDirectory("/avatars");
+				Directory.CreateDirectory($"{webHostEnvironment.WebRootPath}/avatars");
 				await image.SaveAsync(path.Path, new PngEncoder(), CancellationToken.None);
 				return path;
 			}

@@ -50,6 +50,8 @@ builder.Services.AddScoped<AdminPanelService>();
 builder.Services.AddScoped<NumberDrawGameService>();
 builder.Services.AddScoped<RouletteService>();
 builder.Services.AddScoped<AvatarService>();
+builder.Services.AddScoped<AvatarPathFactory>();
+builder.Services.AddScoped<AppDBContext>();
 
 var app = builder.Build();
 

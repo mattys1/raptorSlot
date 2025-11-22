@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace raptorSlot.DAL {
-	public class AppDBContext(DbContextOptions<AppDBContext> options) : IdentityDbContext<AppUser>(options) {
+	public class AppDBContext(DbContextOptions<AppDBContext> options, AvatarPathFactory avatarPathFactory) : IdentityDbContext<AppUser>(options) {
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			base.OnModelCreating(modelBuilder);
@@ -16,7 +16,7 @@ namespace raptorSlot.DAL {
 					     ? m.Value.Path
 					     : null,
 				s => s != null
-					     ? Maybe.From(new AvatarPath(s))
+					     ? Maybe.From(avatarPathFactory.FromPath(s))
 					     : Maybe.None
 				);
 		}

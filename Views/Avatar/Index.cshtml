@@ -1,0 +1,28 @@
+@using raptorSlot.Controllers
+@using raptorSlot.Util
+@model AppUser 
+@{
+    ViewBag.Title = "Change Avatar";
+}
+
+<h2>Change avatar for: @Model.UserName</h2>
+
+<form asp-controller="@ControllerStripper.StripControllerSuffix(nameof(AvatarController))"
+      asp-action="@nameof(AvatarController.UploadAvatar)"
+      method="post"
+      enctype="multipart/form-data">
+
+    <div>
+        <label for="avatarFile">Select avatar</label>
+        <input type="file"
+               id="avatarFile"
+               name="image"
+               accept="image/*" 
+               @* class="btn btn-primary btn-outline-light" *@
+        />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
+<div asp-validation-summary="All" class="text-danger mt-3"></div>
