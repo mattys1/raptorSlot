@@ -8,7 +8,7 @@ namespace raptorSlot.Controllers {
 	public class LeaderboardController(UserManager<AppUser> userManager) : Controller {
 		[HttpGet]
 		public IActionResult Index() {
-			var users = userManager.Users.OrderByDescending(u => u.Tokens).ToList();
+			var users = userManager.Users.OrderByDescending(u => u.Tokens + 2 * u.SuperTokens).ToList();
 			return View(users);
 		}	
 	}

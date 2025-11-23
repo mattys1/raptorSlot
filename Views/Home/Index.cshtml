@@ -2,23 +2,22 @@
     ViewBag.Title = "Strona Główna";
 }
 
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
 <div class="row">
-    <div class="col-md-6">
-	@if (User.Identity.IsAuthenticated)
-	{
-		<p>You're signed in, @User.Identity.Name</p>
-	}
-	else
-	{
-		<p>You're not signed in.</p>
-	}
-        <ul class="list-group">
-            <!--<li class="list-group-item">                                         -->
-            <!--    <a href="@Url.Action("Index", "Osoby")">Lista Osób (Read)</a>    -->
-            <!--</li>                                                                -->
-            <!--<li class="list-group-item">                                         -->
-            <!--    <a href="@Url.Action("Create", "Osoby")">Dodaj Osobę (Create)</a>-->
-            <!--</li>                                                                -->
-        </ul>
-    </div>
+	<div class="col-md-6">
+		@if(User.Identity.IsAuthenticated){
+			<p>You're signed in, @User.Identity.Name</p>
+		} else{
+			<p>You're not signed in.</p>
+		}
+		<ul class="list-group">
+			<!--<li class="list-group-item">                                         -->
+			<!--    <a href="@Url.Action("Index", "Osoby")">Lista Osób (Read)</a>    -->
+			<!--</li>                                                                -->
+			<!--<li class="list-group-item">                                         -->
+			<!--    <a href="@Url.Action("Create", "Osoby")">Dodaj Osobę (Create)</a>-->
+			<!--</li>                                                                -->
+		</ul>
+	</div>
 </div>
