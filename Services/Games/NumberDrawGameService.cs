@@ -20,7 +20,7 @@ namespace raptorSlot.Services.Games
             _logger = logger;
         }
 
-        protected override int[] Draw()
+        protected override int[] Draw(bool isUsingSuperTokens = false)
         {
             return new[] { NextSymbol(), NextSymbol(), NextSymbol() };
 

@@ -79,8 +79,8 @@ public abstract class GameServiceBase<TPayload, TDrawResult>(UserManager<AppUser
                 return Result.Failure<Tuple<TDrawResult, Wager>>($"Not enough tokens! Have {user.Tokens} and need {wager.WagerAmount} for wager.");
             } 
         }
-        
-        var drawResult = Draw(payload);
+
+        var drawResult = Draw(payload, wager.IsPremiumToken);
         var multiplierResult = GenerateMultiplierForDraw(payload, drawResult);
         if(multiplierResult.IsFailure) {
             return Result.Failure<Tuple<TDrawResult, Wager>>(multiplierResult.Error);
