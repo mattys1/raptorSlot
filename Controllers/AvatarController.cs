@@ -31,25 +31,19 @@ namespace raptorSlot.Controllers {
 				return BadRequest();
 			}
 
-			var avatarResult = await avatarService.GetUserAvatar(user);
-			if (avatarResult.IsFailure) {
-				ModelState.AddModelError(string.Empty, avatarResult.Error);
-				return NotFound();
-			}
-
-			var maybeImage = avatarResult.Value;
-			if (maybeImage.HasNoValue) {
-				return NotFound();
-			}
-
-			var image = maybeImage.Value;
-
-			using var ms = new MemoryStream();
-			image.Save(ms, new PngEncoder());
-			ms.Position = 0;
-
-			return File(ms.ToArray(), "image/png");
+			return await GetUserAvatar(user);
 		}
+		
+		[HttpGet]
+		public async Task<IActionResult> GetAvatarForUser(string userId) {
+			var user = await userManager.FindByIdAsync(userId);
+			if (user == null) {
+				return BadRequest();
+			}
+
+			return await GetUserAvatar(user);
+		}
+		
 		[HttpPost]
 		public async Task<IActionResult> DeleteAvatar() {
 			var user = await userManager.GetUserAsync(User);
@@ -95,6 +89,27 @@ namespace raptorSlot.Controllers {
 			}
 
 			return RedirectToAction(nameof(HomeController.Index), ControllerStripper.StripControllerSuffix(nameof(HomeController)));
+		}
+
+		private async Task<IActionResult> GetUserAvatar(AppUser user) {
+			var avatarResult = await avatarService.GetUserAvatar(user);
+			if (avatarResult.IsFailure) {
+				ModelState.AddModelError(string.Empty, avatarResult.Error);
+				return NotFound();
+			}
+
+			var maybeImage = avatarResult.Value;
+			if(maybeImage.HasNoValue) {
+				return NotFound();
+			}
+
+			var image = maybeImage.Value;
+
+			using var ms = new MemoryStream();
+			image.Save(ms, new PngEncoder());
+			ms.Position = 0;
+
+			return File(ms.ToArray(), "image/png");
 		}
 	}
 }
