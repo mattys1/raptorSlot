@@ -1,6 +1,8 @@
 @{
     ViewData["Title"] = "Losowanie 3 liczb";
-    var balance = (int?)ViewData["Balance"] ?? 0;
+    // Pobieramy oba salda startowe
+    var initialTokens = (int?)ViewData["Tokens"] ?? 0;
+    var initialSuperTokens = (int?)ViewData["SuperTokens"] ?? 0;
 }
 
 <h2>Losowanie 3 liczb</h2>
@@ -8,8 +10,8 @@
 <div class="card p-3 mb-3" style="max-width: 560px;">
     <div class="d-flex justify-content-between mb-2">
         <div>
-            <strong>Saldo ¿etonów:</strong>
-            <span id="balance">@balance</span>
+            <strong id="balanceLabel">Saldo ¿etonów:</strong>
+            <span id="balanceDisplay">@initialTokens</span>
         </div>
         <div id="balanceWarning" class="text-danger" style="display:none;">
             Brak wystarczaj¹cych ¿etonów.
@@ -24,7 +26,19 @@
 
     <div class="mb-3">
         <label for="wagerInput" class="form-label">Ile ¿etonów chcesz obstawiæ?</label>
-        <input id="wagerInput" type="number" min="1" class="form-control" value="1" />
+        <div class="row align-items-center">
+            <div class="col">
+                <input id="wagerInput" type="number" min="1" class="form-control" value="1" />
+            </div>
+            <div class="col-auto">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="premiumTokensCheck">
+                    <label class="form-check-label" for="premiumTokensCheck">
+                        U¿yj ¿etonów Premium
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="d-flex gap-2">
@@ -44,23 +58,55 @@
     const playBtn = document.getElementById('playBtn');
     const wagerInput = document.getElementById('wagerInput');
     const msg = document.getElementById('message');
-    const balanceEl = document.getElementById('balance');
+
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const balanceLabel = document.getElementById('balanceLabel');
     const balanceWarning = document.getElementById('balanceWarning');
+    const premiumCheck = document.getElementById('premiumTokensCheck');
 
-    // Parsowanie balansu pocz¹tkowego ¿etonów z serwera
-    let balance = parseInt(balanceEl.textContent, 10) || 0;
+    // Przechowujemy stany obu portfeli
+    let currentTokens = @initialTokens;
+    let currentSuperTokens = @initialSuperTokens;
 
-    function updateUiForBalance() {
-        if (balance <= 0) {
+    // Funkcja zwracaj¹ca aktualnie wybrane saldo
+    function getCurrentBalance() {
+        return premiumCheck.checked ? currentSuperTokens : currentTokens;
+    }
+
+    // Aktualizacja UI (label, liczba, kolor przycisku)
+    function updateUiState() {
+        const isPremium = premiumCheck.checked;
+        const bal = getCurrentBalance();
+
+        // Tekst i liczba
+        balanceLabel.textContent = isPremium ? "Saldo Premium:" : "Saldo ¿etonów:";
+        balanceDisplay.textContent = bal;
+
+        // Kolor przycisku (zwyk³y = success/zielony, premium = warning/z³oty - podobnie jak w ruletce)
+        if (isPremium) {
+            playBtn.classList.remove('btn-success');
+            playBtn.classList.add('btn-warning');
+        } else {
+            playBtn.classList.remove('btn-warning');
+            playBtn.classList.add('btn-success');
+        }
+
+        // Blokada przycisku jeœli brak œrodków
+        if (bal <= 0) {
             playBtn.disabled = true;
             balanceWarning.style.display = 'block';
+            balanceWarning.textContent = isPremium ? "Brak ¿etonów Premium." : "Brak zwyk³ych ¿etonów.";
         } else {
             playBtn.disabled = false;
             balanceWarning.style.display = 'none';
         }
     }
 
-    updateUiForBalance();
+    // Nas³uchiwanie na checkbox
+    premiumCheck.addEventListener('change', updateUiState);
+
+    // Inicjalizacja
+    updateUiState();
 
     function animateShuffle(duration = 900){
         return new Promise(resolve => {
@@ -116,27 +162,35 @@
             if (!r.ok) return;
             const json = await r.json();
             if (json && json.success) {
-                if (typeof json.tokens !== 'undefined') {
-                    if (parseInt(json.tokens,10) !== balance) {
-                        balance = parseInt(json.tokens,10);
-                        balanceEl.textContent = balance;
-                        updateUiForBalance();
-                    }
-                    updateNavTokens(json.tokens, json.superTokens);
-                }
+                // Aktualizujemy zmienne lokalne
+                if (typeof json.tokens !== 'undefined') currentTokens = parseInt(json.tokens, 10);
+                if (typeof json.superTokens !== 'undefined') currentSuperTokens = parseInt(json.superTokens, 10);
+
+                updateUiState();
+                updateNavTokens(json.tokens, json.superTokens);
             }
         } catch(err) {
             console.warn('refreshNavBalance failed', err);
         }
     }
 
-    document.getElementById('playBtn').addEventListener('click', async ()=>{
+    playBtn.addEventListener('click', async ()=>{
         const wager = parseInt(wagerInput.value,10);
+        const isPremium = premiumCheck.checked;
+        const activeBalance = getCurrentBalance();
+
         if (!wager || wager <= 0){ showMessage('Podaj poprawn¹ liczbê ¿etonów.', 'warning'); return; }
 
-        if (balance <= 0) { showMessage('Nie masz ¿etonów — nie mo¿esz graæ.', 'warning'); updateUiForBalance(); return; }
+        if (activeBalance <= 0) {
+            showMessage('Nie masz wystarczaj¹cych ¿etonów.', 'warning');
+            updateUiState();
+            return;
+        }
 
-        if (wager > balance) { showMessage('Nie mo¿esz obstawiæ wiêcej ni¿ masz na koncie.', 'warning'); return; }
+        if (wager > activeBalance) {
+            showMessage(`Nie mo¿esz obstawiæ wiêcej ni¿ masz na koncie (${activeBalance}).`, 'warning');
+            return;
+        }
 
         playBtn.disabled = true;
         await animateShuffle(1000);
@@ -146,6 +200,8 @@
 
         const form = new FormData();
         form.append('wager', wager);
+        // ZMIANA: Wysy³amy status checkboxa
+        form.append('usePremium', isPremium);
 
         try{
             const r = await fetch('@Url.Action("PlayNumberDraw","Games")', {
@@ -168,25 +224,31 @@
 
             if (!json.success){
                 showMessage(json.error || 'B³¹d', 'danger');
+                // Nawet przy b³êdzie aktualizujemy stany (np. brak œrodków)
+                if (typeof json.tokens !== 'undefined') currentTokens = json.tokens;
+                if (typeof json.superTokens !== 'undefined') currentSuperTokens = json.superTokens;
+                updateUiState();
             } else {
                 const draw = json.draw;
                 nEls.forEach((el,i)=> el.textContent = draw[i]);
 
-                balance = parseInt(json.balance, 10) || balance;
-                balanceEl.textContent = balance;
-                updateUiForBalance();
+                // Aktualizacja lokalnych zmiennych salda
+                if (typeof json.tokens !== 'undefined') currentTokens = json.tokens;
+                if (typeof json.superTokens !== 'undefined') currentSuperTokens = json.superTokens;
 
-                if (typeof json.tokens !== 'undefined') {
-                    updateNavTokens(json.tokens, json.superTokens);
-                } else {
-                    updateNavTokens(balance, null);
-                }
+                // Odœwie¿enie widoku
+                updateUiState();
+                updateNavTokens(json.tokens, json.superTokens);
 
-                const delta = json.delta || json.tokensDelta || 0;
+                const delta = json.delta || 0;
+                // Wybieramy odpowiedni stan do wyœwietlenia w komunikacie
+                const balanceNow = isPremium ? currentSuperTokens : currentTokens;
+                const currencyName = isPremium ? "Premium" : "¿etonów";
+
                 if (delta > 0){
-                    showMessage(`Wygra³eœ! Zmiana ¿etonów: +${delta}. Nowy stan: ${balance}`, 'success');
+                    showMessage(`Wygra³eœ! Zmiana: +${delta} ${currencyName}. Nowy stan: ${balanceNow}`, 'success');
                 } else {
-                    showMessage(`Przegra³eœ. Zmiana ¿etonów: ${delta}. Nowy stan: ${balance}`, 'warning');
+                    showMessage(`Przegra³eœ. Zmiana: ${delta} ${currencyName}. Nowy stan: ${balanceNow}`, 'warning'); // warning ma kolor ¿ó³ty/pomarañczowy, pasuje do przegranej ale nie b³êdu
                 }
             }
         } catch(e){
@@ -194,8 +256,8 @@
             console.error(e);
             await refreshNavBalance();
         } finally {
-            if (balance > 0) playBtn.disabled = false;
-            else updateUiForBalance();
+            // Ponowne sprawdzenie czy odblokowaæ przycisk
+            updateUiState();
         }
     });
 

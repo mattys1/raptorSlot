@@ -41,14 +41,17 @@ namespace raptorSlot.Controllers
             }
 
             ViewData["UserId"] = userId;
-            ViewData["Balance"] = user.Tokens;
+            // Przekazujemy oba salda do widoku
+            ViewData["Tokens"] = user.Tokens;
+            ViewData["SuperTokens"] = user.SuperTokens;
 
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PlayNumberDraw([FromForm] int wager)
+        // ZMIANA: Dodano parametr [FromForm] bool usePremium
+        public async Task<IActionResult> PlayNumberDraw([FromForm] int wager, [FromForm] bool usePremium)
         {
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId))
@@ -58,7 +61,8 @@ namespace raptorSlot.Controllers
 
             try
             {
-                var w = new Wager(wager);
+                // ZMIANA: Przekazujemy flagê usePremium do obiektu Wager
+                var w = new Wager(wager, usePremium);
                 var res = await _numberGame.PlayNumberDrawAsync(w, userId);
 
                 if (res.IsFailure)
@@ -84,6 +88,7 @@ namespace raptorSlot.Controllers
                     success = true,
                     draw = res.Value.Draw,
                     delta = res.Value.TokensDelta,
+                    // balance nie jest ju¿ tutaj kluczowe, bo frontend weŸmie tokens/superTokens zale¿nie od trybu
                     balance = res.Value.NewBalance,
                     tokens = userAfter.Tokens,
                     superTokens = userAfter.SuperTokens
@@ -94,7 +99,7 @@ namespace raptorSlot.Controllers
                 try
                 {
                 }
-                catch {}
+                catch { }
 
                 var userAfterEx = await _userManager.FindByIdAsync(userId);
                 return Json(new
