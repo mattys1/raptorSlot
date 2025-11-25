@@ -1,23 +1,22 @@
 @{
     ViewData["Title"] = "Games";
 }
-
-<h2>Gry</h2>
+<h2>Games</h2>
 
 <div class="row">
     <div class="col-md-4">
         <div class="card mb-3">
             <div class="card-body">
-                <h5 class="card-title">Losowanie 3 liczb</h5>
-                <p class="card-text">Prosta gra � obstaw liczb� �eton�w i wylosuj 3 liczby. Wszystkie trzy r�wne -> wygrywasz podw�jnie.</p>
+                <h5 class="card-title">Draw 3 Numbers</h5>
+                <p class="card-text">A simple game where you bet chips and draw 3 numbers. All three equal -> you win double.</p>
                 <a href="@Url.Action("NumberDraw", "Games")" class="btn btn-primary">Play</a>
             </div>
         </div>
         
         <div class="card mb-3">
             <div class="card-body">
-                <h5 class="card-title">Ruletka</h5>
-                <p class="card-text">Losowanie liczby na podstawie roznych kryteriow.</p>
+                <h5 class="card-title">Roulette</h5>
+                <p class="card-text">Draw a number based on various criteria.</p>
                 <a href="@Url.Action("Index", "Roulette")" class="btn btn-primary">Play</a>
             </div>
         </div>
