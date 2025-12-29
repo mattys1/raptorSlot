@@ -32,17 +32,19 @@ namespace raptorSlot.Services.Games {
 			if(firstWinResult.IsFailure || firstWinResult.Value)
 				return firstDraw;
 
-			const double secondChance = 0.90;
+			const double secondChance = 1;
 
 			var bytes = new byte[4];
 			RandomNumberGenerator.Fill(bytes);
 			var randUint = BitConverter.ToUInt32(bytes, 0);
 			var randDouble = randUint / (double)uint.MaxValue;
-
-			if(randDouble <= secondChance && choice.Selected.Length > 0) {
-				var forcedIndex = RandomNumberGenerator.GetInt32(0, choice.Selected.Length);
-				return new RouletteDraw(choice.Selected[forcedIndex]);
+			if(isUsingSuperTokens) {
+				if(randDouble <= secondChance && choice.Selected.Length > 0) {
+					var forcedIndex = RandomNumberGenerator.GetInt32(0, choice.Selected.Length);
+					return new RouletteDraw(choice.Selected[forcedIndex]);
 			}
+			}
+			
 
 			return firstDraw;
 		}

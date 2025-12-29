@@ -26,7 +26,7 @@ public abstract class GameServiceBase<TDrawResult>(UserManager<AppUser> userMana
             } 
         }
         
-        var drawResult = Draw();
+        var drawResult = Draw(wager.IsPremiumToken);
         var multiplierResult = GenerateMultiplierForDraw(drawResult);
         if(multiplierResult.IsFailure) {
             return Result.Failure<Tuple<TDrawResult, Wager>>(multiplierResult.Error);
