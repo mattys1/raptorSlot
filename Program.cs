@@ -69,21 +69,42 @@ using (var scope = app.Services.CreateScope())
 	var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 	var userManager = services.GetRequiredService<UserManager<AppUser>>();
 
-	if(!await roleManager.RoleExistsAsync(Roles.ADMIN)) {
-		await roleManager.CreateAsync(new IdentityRole(Roles.ADMIN));
+	async Task SeedAdminAsync() {
+		if(!await roleManager.RoleExistsAsync(Roles.ADMIN)) {
+			var roleResult = await roleManager.CreateAsync(new IdentityRole(Roles.ADMIN));
+			if(!roleResult.Succeeded) {
+				var roleErrors = string.Join("; ", roleResult.Errors.Select(e => $"{e.Code}: {e.Description}"));
+				throw new InvalidOperationException($"Failed to create admin role: {roleErrors}");
+			}
+		}
+
+		var adminUser = await userManager.FindByEmailAsync(EnvVars.ADMIN_EMAIL);
+		if(adminUser == null) {
+			adminUser = new AppUser { UserName = EnvVars.ADMIN_USERNAME, Email = EnvVars.ADMIN_EMAIL, EmailConfirmed = true };
+
+			var createResult = await userManager.CreateAsync(adminUser, EnvVars.ADMIN_PASSWORD);
+			if(!createResult.Succeeded) {
+				var errors = string.Join("; ", createResult.Errors.Select(e => $"{e.Code}: {e.Description}"));
+				throw new InvalidOperationException($"Failed to create admin user: {errors}");
+			}
+		}
+
+		if(!await userManager.IsInRoleAsync(adminUser, Roles.ADMIN)) {
+			var addToRoleResult = await userManager.AddToRoleAsync(adminUser, Roles.ADMIN);
+			if(!addToRoleResult.Succeeded) {
+				var addErrors = string.Join("; ", addToRoleResult.Errors.Select(e => $"{e.Code}: {e.Description}"));
+				throw new InvalidOperationException($"Failed to assign admin role: {addErrors}");
+			}
+		}
 	}
 
-	var adminUser = await userManager.FindByEmailAsync(EnvVars.ADMIN_EMAIL);
-	if(adminUser == null) {
-		adminUser = new AppUser { UserName = EnvVars.ADMIN_USERNAME, Email = EnvVars.ADMIN_EMAIL, EmailConfirmed = true };
-		var createResult = await userManager.CreateAsync(adminUser, EnvVars.ADMIN_PASSWORD);
-		var errors = string.Join("; ", createResult.Errors.Select(e => $"{e.Code}: {e.Description}"));
-		throw new InvalidOperationException($"Failed to create admin user: {errors}");
+	try {
+		await SeedAdminAsync();
 	}
-
-	if(!await userManager.IsInRoleAsync(adminUser, Roles.ADMIN)) {
-		await userManager.AddToRoleAsync(adminUser, Roles.ADMIN);
-
+	catch (Exception ex)
+	{
+		Debug.WriteLine($"Error seeding admin user and role: {ex.Message}");
+		await SeedAdminAsync();
 	}
 }
 

@@ -6,11 +6,9 @@ RUN apt-get update && \
 COPY ["raptorSlot.csproj", "."]
 RUN dotnet restore "raptorSlot.csproj"
 
-# copy everything and publish
 COPY . .
 RUN dotnet publish "raptorSlot.csproj" -c Release -o /app/publish /p:PublishTrimmed=false
 
-# ---------- Runtime stage ----------
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 EXPOSE 80
