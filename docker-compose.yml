@@ -8,6 +8,10 @@ services:
     command: "dotnet raptorSlot.dll"
     volumes:
       - ./db:/app/db
+    environment:
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
     networks:
       - app-network
     ports:

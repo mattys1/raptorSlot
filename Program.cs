@@ -77,7 +77,8 @@ using (var scope = app.Services.CreateScope())
 	if(adminUser == null) {
 		adminUser = new AppUser { UserName = EnvVars.ADMIN_USERNAME, Email = EnvVars.ADMIN_EMAIL, EmailConfirmed = true };
 		var createResult = await userManager.CreateAsync(adminUser, EnvVars.ADMIN_PASSWORD);
-		Debug.Assert(createResult.Succeeded, "Failed to create admin user");	
+		var errors = string.Join("; ", createResult.Errors.Select(e => $"{e.Code}: {e.Description}"));
+		throw new InvalidOperationException($"Failed to create admin user: {errors}");
 	}
 
 	if(!await userManager.IsInRoleAsync(adminUser, Roles.ADMIN)) {
