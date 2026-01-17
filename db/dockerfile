@@ -1,5 +1,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS migrate
-RUN dotnet tool install --global dotnet-ef 
-COPY . /app
+
 WORKDIR /app
+
+
+RUN apt-get update && \
+	apt-get install nodejs -y
+
+RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/root/.dotnet/tools"
+
+COPY raptorSlot.csproj ./
+RUN dotnet restore ./raptorSlot.csproj
+
+COPY . ./
+RUN dotnet build ./raptorSlot.csproj -c Release --no-restore
+

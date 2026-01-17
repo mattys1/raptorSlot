@@ -1,7 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# copy csproj and restore first to leverage docker cache
+RUN apt-get update && \
+	apt-get install nodejs -y
 COPY ["raptorSlot.csproj", "."]
 RUN dotnet restore "raptorSlot.csproj"
 
