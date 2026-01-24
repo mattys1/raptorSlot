@@ -4,22 +4,22 @@
     var superTokens = (int?)ViewData["SuperTokens"] ?? 0;
 }
 
-<h2>Draw 1 number</h2>
+<h2>Losowanie 1 liczby</h2>
 
 <div class="card p-3 mb-3" style="max-width: 560px;">
     <div class="d-flex justify-content-between mb-2">
         <div>
-            <strong id="balanceLabel">Token balance:</strong>
+            <strong id="balanceLabel">Saldo ¿etonów:</strong>
             <span id="balanceDisplay">@tokens</span>
         </div>
         <div id="balanceWarning" class="text-danger" style="display:none;">
-            Not enough tokens.
+            Brak wystarczaj¹cych ¿etonów.
         </div>
     </div>
 
     <div class="text-center display-4 mb-3">
         <div id="draw-display" class="border p-3" style="font-size:48px; font-weight:bold; width:120px; margin: 0 auto;">
-            <span id="rolling-number">ï¿½</span>
+            <span id="rolling-number">—</span>
         </div>
     </div>
 
@@ -27,7 +27,7 @@
         @Html.AntiForgeryToken()
 
         <div class="mb-2">
-            <label class="form-label">Number of tokens:</label>
+            <label class="form-label">Stawka (¿etony):</label>
             <input id="wager" name="wager" type="number" min="1" value="1" class="form-control" />
         </div>
 
@@ -37,7 +37,7 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Choose number:</label>
+            <label class="form-label">Wybierz liczbê (1–9):</label>
             <select id="chosenNumber" name="chosenNumber" class="form-select">
                 @for (int i = 1; i <= 9; i++)
                 {
@@ -48,7 +48,7 @@
 
         <div class="d-flex gap-2">
             <button id="play-btn" type="button" class="btn btn-success">Play</button>
-            <a href="@Url.Action("Index","Games")" class="btn btn-secondary">Return to games</a>
+            <a href="@Url.Action("Index","Games")" class="btn btn-secondary">Powrót do listy gier</a>
         </div>
 
         <div id="message" class="mt-3"></div>
@@ -84,7 +84,7 @@
                 navSuperEl.textContent = newSuperTokens;
             }
         } catch(e) {
-            console.warn('Unable to update the counter in nav', e);
+            console.warn('Nie uda³o siê zaktualizowaæ licznika w nav', e);
         }
     }
 
@@ -96,7 +96,7 @@
         const isPremium = premiumCheck.checked;
         const bal = getCurrentBalance();
 
-        balanceLabel.textContent = isPremium ? "Premium Tokens number:" : "Regular Tokens number:";
+        balanceLabel.textContent = isPremium ? "Saldo Premium:" : "Saldo ¿etonów:";
         balanceDisplay.textContent = bal;
 
         if (isPremium) {
@@ -110,7 +110,7 @@
         if (bal <= 0) {
             playBtn.disabled = true;
             balanceWarning.style.display = 'block';
-            balanceWarning.textContent = isPremium ? "No premium tokens" : "No regular Tokens";
+            balanceWarning.textContent = isPremium ? "Brak ¿etonów Premium." : "Brak zwyk³ych ¿etonów.";
         } else {
             playBtn.disabled = false;
             balanceWarning.style.display = 'none';
@@ -180,15 +180,15 @@
         const isPremium = premiumCheck.checked;
         const chosenNumber = parseInt(chosenSelect.value,10);
 
-        if (!wager || wager <= 0){ showMessage('input a correct number of tokens.', 'warning'); return; }
+        if (!wager || wager <= 0){ showMessage('Podaj poprawn¹ liczbê ¿etonów.', 'warning'); return; }
         const activeBalance = getCurrentBalance();
         if (activeBalance <= 0) {
-            showMessage('You do not have enough tokens.', 'warning');
+            showMessage('Nie masz wystarczaj¹cych ¿etonów.', 'warning');
             updateUiState();
             return;
         }
         if (wager > activeBalance) {
-            showMessage(`You cannot wage tokens than what you have in your account (${activeBalance}).`, 'warning');
+            showMessage(`Nie mo¿esz obstawiæ wiêcej ni¿ masz na koncie (${activeBalance}).`, 'warning');
             return;
         }
 
@@ -213,8 +213,8 @@
 
             if (!r.ok) {
                 let txt;
-                try { txt = await r.text(); } catch(e) { txt = r.statusText || 'Server error'; }
-                showMessage(`Server error: ${r.status} ${txt}`, 'danger');
+                try { txt = await r.text(); } catch(e) { txt = r.statusText || 'B³¹d serwera'; }
+                showMessage(`B³¹d serwera: ${r.status} ${txt}`, 'danger');
                 await refreshNavBalance();
                 return;
             }
@@ -222,7 +222,7 @@
             const json = await r.json();
 
             if (!json.success) {
-                showMessage(json.error || 'Error', 'danger');
+                showMessage(json.error || 'B³¹d', 'danger');
                 if (typeof json.tokens !== 'undefined') currentTokens = json.tokens;
                 if (typeof json.superTokens !== 'undefined') currentSuperTokens = json.superTokens;
                 updateUiState();
@@ -238,18 +238,18 @@
                 updateNavTokens(json.tokens, json.superTokens);
 
                 const delta = json.delta || 0;
-                const currencyName = isPremium ? "Premium" : "tokens";
+                const currencyName = isPremium ? "Premium" : "¿etonów";
                 const balanceNow = isPremium ? currentSuperTokens : currentTokens;
 
                 if (delta > 0) {
-                    showMessage(`You got it! You get: +${delta} ${currencyName}. New balance: ${balanceNow}`, 'success');
+                    showMessage(`Trafi³eœ! Zyska³eœ +${delta} ${currencyName}. Nowy stan: ${balanceNow}`, 'success');
                 } else {
-                    showMessage(`Fail. Change: ${delta} ${currencyName}. New balance: ${balanceNow}`, 'warning');
+                    showMessage(`Nie trafi³eœ. Zmiana: ${delta} ${currencyName}. Nowy stan: ${balanceNow}`, 'warning');
                 }
             }
         } catch (err) {
             console.error(err);
-            showMessage('Connection error, try again.', 'danger');
+            showMessage('B³¹d po³¹czenia. Spróbuj ponownie.', 'danger');
             await refreshNavBalance();
         } finally {
             playBtn.disabled = false;
