@@ -235,6 +235,7 @@
                     showMessage(`You got it! You ge: +${delta} ${currencyName}. New balance: ${balanceNow}`, 'success');
                 } else {
                     showMessage(`Fail. Change: ${delta} ${currencyName}. New balance: ${balanceNow}`, 'warning');
+                    }
             }
         } catch(e){
             showMessage('Connection error, try again.', 'danger');
